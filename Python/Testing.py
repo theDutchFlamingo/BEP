@@ -47,13 +47,13 @@ for i, m in enumerate(small_motifs):
     V = count_noiseless_eigenvalues(m)
     print(V)
 
-    print(f"Eigh of m{2*i+4}: {np.linalg.eigh(m)}")
+    print(f"Eigh of m{2*i+4}: {np.linalg.eigh(m)[1]}")
 
 for i, m in enumerate(motifs):
     V = count_noiseless_eigenvalues(m)
     print(V)
 
-    print(f"Eigh of m1{i+1}: {np.linalg.eigh(m)}")
+    print(f"Eigh of m1{i+1}: {np.linalg.eigh(m)[1]}")
 
 m12_p = np.matrix([
     [0, 1, 1],
@@ -62,3 +62,9 @@ m12_p = np.matrix([
 ])
 
 print(np.linalg.eigh(m12_p))
+
+M = np.linalg.eigh(m13)
+print(abs(M[1].sum(axis=0)) < tol)
+print(abs(np.sum(M[1], axis=0)))
+print(abs(M[1].sum(axis=1)))
+# print(abs(sum(np.asarray(M[1].T[3])[0])) < tol)

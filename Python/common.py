@@ -2,6 +2,8 @@ import random
 import networkx as nx
 import numpy as np
 
+tol = 1e-15
+
 
 def random_graph(m, q):
     g = nx.Graph()
@@ -21,8 +23,8 @@ def has_noiseless_subsytem(g: nx.Graph):
 
 
 def has_noiseless_eigenvector(m: np.matrix):
-    for v in np.linalg.eigh(m)[1]:
-        if sum(np.asarray(v)[0]) == 0:
+    for v in np.linalg.eigh(m)[1].T:
+        if sum(np.asarray(v)[0]) < tol:
             return True
 
 
@@ -34,9 +36,8 @@ def count_noiseless_subsystems(g: nx.Graph):
 
 def count_noiseless_eigenvalues(m: np.matrix):
     count = 0
-    for v in np.linalg.eigh(m)[1]:
-        if sum(np.asarray(v)[0]) == 0:
+    for v in np.linalg.eigh(m)[1].T:
+        if abs(sum(np.asarray(v)[0])) < tol:
             count += 1
-            break
 
     return count
