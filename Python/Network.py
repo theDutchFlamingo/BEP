@@ -29,23 +29,25 @@ for i, n in enumerate(N):
             # print(nx.to_numpy_matrix(g))
             if has_noiseless_subsytem(g):
                 count += 1
-            av = count_noiseless_subsystems(g)
+            av += count_noiseless_subsystems(g)
 
-        av /= len(G)
-        z = count / n
+        av /= len(G) * It
+        z = count / It
         z2 = av
 
         print(f"Noiseless count: {count}")
         print("Iteration: " + str(i * len(P) + j + 1) + " of " + str(len(N) * len(P)))
 
-        row.append(z if z != 0 else 0.5e-3)
-        row2.append(av if av != 0 else 0.5e-3)
+        if z != 0:
+            row.append(z if z != 0 else 0.5e-0)
+        if av != 0:
+            row2.append(av if av != 0 else 0.5e-0)
 
     ratios.append(row)
     ratios2.append(row2)
 
 plt, ax = plt.subplots(figsize=(6, 6))
-im = ax.imshow(ratios2, cmap='hot', interpolation='nearest', extent=[N[0], N[-1], P[0], P[-1]],
+im = ax.imshow(ratios, cmap='hot', interpolation='nearest', extent=[N[1], N[-1], P[0], P[-1]],
                aspect='auto', norm=cl.LogNorm())
 plt.colorbar(im)
 plt.show()
