@@ -21,6 +21,13 @@ m13 = np.matrix([
     [1, 0, 0, 0, 1],
     [1, 0, 0, 1, 0]
 ])
+m13_p = np.matrix([
+    [0, 0, 1, 1, 0],
+    [0, 0, 1, 0, 1],
+    [1, 1, 0, 1, 1],
+    [1, 0, 1, 0, 0],
+    [0, 1, 1, 0, 0]
+])
 m14 = np.matrix([
     [0, 1, 1, 0, 0],
     [1, 0, 1, 1, 1],
@@ -64,6 +71,12 @@ m12_p = np.matrix([
 print(np.linalg.eigh(m12_p))
 
 M = np.linalg.eigh(m13)
+print(abs(M[1].sum(axis=0)) < tol)
+print(abs(np.sum(M[1], axis=0)))
+print(abs(M[1].sum(axis=1)))
+
+M = np.linalg.eigh(m13_p)
+print(M[1])
 print(abs(M[1].sum(axis=0)) < tol)
 print(abs(np.sum(M[1], axis=0)))
 print(abs(M[1].sum(axis=1)))
