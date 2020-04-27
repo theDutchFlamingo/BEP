@@ -4,9 +4,7 @@ from matplotlib import colors as cl
 from common import *
 
 N = np.linspace(30, 3, 28, dtype=int)
-print(N)
 P = np.linspace(0, 1, 25, dtype=float)
-print(P)
 
 It = 1000
 
@@ -41,20 +39,17 @@ for i, n in enumerate(N):
     ratios.append(row)
     ratios2.append(row2)
 
-print(ratios)
-print(ratios2)
-
 extent = [P[0], P[-1], N[-1], N[0]]
-im_args = {"cmap": "hot", "interpolation": "nearest", "extent": extent, "aspect": "auto", "norm": cl.LogNorm()}
+im_args = {"cmap": "hot", "interpolation": "nearest", "extent": extent, "aspect": "auto"}
 
 fig, ax = plt.subplots(2, 1, figsize=(6, 12))
-im2 = ax[0].imshow(ratios2, **im_args)
+im2 = ax[0].imshow(ratios2, **im_args, norm=cl.LogNorm())
 ax[0].set_title("Averages")
 # ax[0].set_xlim(P[0], P[-1])
 # ax[0].set_ylim(N[-1], N[0])
 fig.colorbar(im2, ax=ax[0])
 
-im = ax[1].imshow(ratios, cmap="hot", interpolation="nearest", extent=extent, aspect="auto", norm=cl.LogNorm())
+im = ax[1].imshow(ratios, **im_args, norm=cl.LogNorm())
 ax[1].set_title("Probability of 1")
 fig.colorbar(im, ax=ax[1])
 
