@@ -16,7 +16,7 @@ def random_graph(m, q):
     return g
 
 
-def has_noiseless_subsytem(g: nx.Graph):
+def has_noiseless_subsystem(g: nx.Graph):
     n = g.number_of_nodes()
     m = nx.to_numpy_matrix(g) if g.number_of_edges() > 0 else np.matrix(np.zeros([n, n]))
     return has_noiseless_eigenvector(m)
@@ -24,17 +24,17 @@ def has_noiseless_subsytem(g: nx.Graph):
 
 def has_noiseless_eigenvector(m: np.matrix):
     for v in np.linalg.eigh(m)[1].T:
-        if sum(np.asarray(v)[0]) < tol:
+        if abs(sum(np.asarray(v)[0])) < tol:
             return True
 
 
 def count_noiseless_subsystems(g: nx.Graph):
     n = g.number_of_nodes()
     m = nx.to_numpy_matrix(g) if g.number_of_edges() > 0 else np.matrix(np.zeros([n, n]))
-    return count_noiseless_eigenvalues(m)
+    return count_noiseless_eigenvectors(m)
 
 
-def count_noiseless_eigenvalues(m: np.matrix):
+def count_noiseless_eigenvectors(m: np.matrix):
     count = 0
     for v in np.linalg.eigh(m)[1].T:
         if abs(sum(np.asarray(v)[0])) < tol:

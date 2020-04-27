@@ -51,13 +51,13 @@ small_motifs = [m4, m6, m8]
 motifs = [m11, m12, m13, m14, m15]
 
 for i, m in enumerate(small_motifs):
-    V = count_noiseless_eigenvalues(m)
+    V = count_noiseless_eigenvectors(m)
     print(V)
 
     print(f"Eigh of m{2*i+4}: {np.linalg.eigh(m)[1]}")
 
 for i, m in enumerate(motifs):
-    V = count_noiseless_eigenvalues(m)
+    V = count_noiseless_eigenvectors(m)
     print(V)
 
     print(f"Eigh of m1{i+1}: {np.linalg.eigh(m)[1]}")
