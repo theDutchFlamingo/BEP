@@ -10,6 +10,8 @@ It = 1000
 
 ratios = []
 ratios2 = []
+min_ = 1
+min2 = 1
 
 for i, n in enumerate(N):
     row = []
@@ -31,13 +33,30 @@ for i, n in enumerate(N):
         av /= len(G) * It
         z2 = av
 
+        if z != 0 and z < min_:
+            min_ = z
+
+        if z2 != 0 and z2 < min2:
+            min2 = z2
+
         print("Iteration: " + str(i * len(P) + j + 1) + " of " + str(len(N) * len(P)))
 
-        row.append(z if z != 0 else 0.5e-2)
-        row2.append(z2 if av != 0 else 0.5e-6)
+        row.append(z)
+        row2.append(z2)
 
     ratios.append(row)
     ratios2.append(row2)
+
+for i, r in enumerate(ratios):
+    for j in range(len(r)):
+        if r[j] == 0:
+            r[j] = min_
+
+for i, r in enumerate(ratios2):
+    for j in range(len(r)):
+        if r[j] == 0:
+            r[j] = min2
+
 
 extent = [P[0], P[-1], N[-1], N[0]]
 im_args = {"cmap": "hot", "interpolation": "nearest", "extent": extent, "aspect": "auto"}
