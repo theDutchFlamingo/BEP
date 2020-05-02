@@ -3,7 +3,7 @@ import numpy as np
 
 
 def heatmap(data, row_labels="", col_labels="",
-            ax=None, cbar_kw=None, cbarlabel="", **kwargs):
+             ax=None, cbar_kw=None, cbarlabel="", **kwargs):
     """
     Create a heatmap from a numpy array and two lists of labels.
 
@@ -26,11 +26,6 @@ def heatmap(data, row_labels="", col_labels="",
         All other arguments are forwarded to `imshow`.
     """
 
-    row_labels = ["cucumber", "tomato", "lettuce", "asparagus",
-                  "potato", "wheat", "barley"]
-    col_labels = ["Farmer Joe", "Upland Bros.", "Smith Gardening",
-                  "Agrifun", "Organiculture", "BioGoods Ltd.", "Cornylee Corp."]
-
     if cbar_kw is None:
         cbar_kw = {}
     if not ax:
@@ -44,26 +39,17 @@ def heatmap(data, row_labels="", col_labels="",
     cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
 
     # We want to show all ticks...
-    ax.set_xticks(np.arange(data.shape[1]))
-    ax.set_yticks(np.arange(data.shape[0]))
+    ax.set_xticks(np.linspace(-1, data.shape[1] - 1, 4, dtype=int))
+    ax.set_yticks(np.linspace(-1, data.shape[0] - 1, 4, dtype=int))
     # ... and label them with the respective list entries.
     ax.set_xticklabels(col_labels if col_labels != "" else [0, 5, 10, 15])
     ax.set_yticklabels(row_labels if row_labels != "" else [0, 5, 10, 15])
 
-    # Let the horizontal axes labeling appear on top.
-    ax.tick_params(top=True, bottom=False,
-                   labeltop=True, labelbottom=False)
+    # Let the ticks appear inside on the top and right.
+    ax.tick_params(top=True, right=True, direction="in")
 
-    # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
-             rotation_mode="anchor")
-
-    # Turn spines off and create white grid.
-    for edge, spine in ax.spines.items():
-        spine.set_visible(False)
-
-    ax.set_xticks(np.arange(0, data.shape[1] + 1, 5) - .5, minor=True)
-    ax.set_yticks(np.arange(0, data.shape[0] + 1, 5) - .5, minor=True)
+    ax.set_xticks(np.arange(data.shape[1]) - .5, minor=True)
+    ax.set_yticks(np.arange(data.shape[0]) - .5, minor=True)
     ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
     ax.tick_params(which="minor", bottom=False, left=False)
 
@@ -121,8 +107,8 @@ def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
     # Loop over the data and create a `Text` for each "pixel".
     # Change the text's color depending on the data.
     texts = []
-    for i in range(0, data.shape[0], 5):
-        for j in range(0, data.shape[1], 5):
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
             kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
             text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
             texts.append(text)

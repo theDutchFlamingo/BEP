@@ -1,4 +1,5 @@
 from common import *
+from plotter import *
 import matplotlib.pyplot as plt
 
 p1 = .05
@@ -16,13 +17,15 @@ for i in range(N):
         data[i, j] = np.nan
 
 fig, ax = plt.subplots()
-heatmap = ax.pcolor(data, cmap=plt.cm.YlGnBu, edgecolor='white', linewidths=5)
+im, cbar = heatmap(data, ax=ax, cmap="YlGnBu")
+# heatmap = ax.pcolor(data, cmap=plt.cm.YlGnBu, edgecolor='white', linewidths=5)
 
 # put the major ticks at the middle of each cell
 # ax.set_xticks(np.arange(data.shape[0])+0.5, minor=False)
 # ax.set_yticks(np.arange(data.shape[1])+0.5, minor=False)
 
 ax.set_aspect('equal')
-fig.colorbar(heatmap)
+ax.invert_yaxis()
+# fig.colorbar(im)
 
 plt.show()

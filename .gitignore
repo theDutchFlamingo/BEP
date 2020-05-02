@@ -8,3 +8,5 @@
 *.bak
 
 Python/Testing.py
+
+Python/__pycache__/
