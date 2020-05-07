@@ -1,10 +1,11 @@
 from common import *
 from plotter import *
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 p1 = .8
 N = 15
-It = 1000
+It = 10000
 
 res = np.zeros([N, N])
 
@@ -26,29 +27,51 @@ def old_version():
     return res
 
 
-def new_version():
-    for i in range(It):
+def new_version(dat):
+    nzit = 0
+    total = 0
+
+    for i in tqdm(range(It)):
         g = nx.erdos_renyi_graph(N, p1)
         cc = get_connected_components(g)
+
+        # The amount of connected components with at least one noiseless eigenvector
+        nzcc = 0
+        temp = np.zeros([N, N], dtype=float)
+        s_tot = 0.0
+
         for c in cc:
             m = nx.to_numpy_array(g)
             m = m[np.ix_(c, c)]
-            nsc = count_noiseless_eigenvectors(m)
 
-            for v in get_noiseless_eigenvectors(m):
-                lap = np.diag(np.sum(m, axis=0)) - m
-                print(get_connected_count_laplacian(lap, v))
-                comp = get_component_size_laplacian(lap, v)
+            evs = get_noiseless_eigenvectors(m)
+            nsc = len(evs)
+
+            if nsc != 0:
+                nzcc += 1
+
+            for v in evs:
+                comp = len(c)
                 ns = get_size(v)
 
-                res[ns - 1, comp - 1] += 1 / It / len(cc) / nsc
-    return res
+                temp[ns - 1, comp - 1] += 1 / nsc
+                s_tot += 1 / nsc
+
+        if nzcc != 0:
+            nzit += 1
+            dat += temp / nzcc
+            total += s_tot / nzcc
+
+            if abs(np.sum(np.nan_to_num(dat)) - total) > tol * It / np.sqrt(2):
+                print("Exceeded the It/sqrt(2) bound on the error")
+
+    return dat / nzit
 
 
-data = new_version()
+data = new_version(res)
 
 fig, ax = plt.subplots()
-im, cbar = heatmap(res, ax=ax, cmap="YlGnBu")
+im, cbar = heatmap(data, end=N, ax=ax, cmap="YlGnBu")
 ax.invert_yaxis()
 
 plt.show()

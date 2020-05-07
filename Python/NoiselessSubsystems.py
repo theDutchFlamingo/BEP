@@ -1,6 +1,7 @@
 import os
 from matplotlib import pyplot as plt
 from matplotlib import colors as cl
+from tqdm import tqdm
 from common import *
 
 N = np.linspace(30, 3, 27, dtype=int)
@@ -9,7 +10,7 @@ N_dense = np.linspace(30, 3, 270, dtype=float)
 
 P_start = 0
 
-It = 1000
+It = 100
 
 ratios = []
 ratios2 = []
@@ -17,7 +18,7 @@ min_ = 1
 min2 = 1
 
 # Calculate the probability of 1 NC and the fraction of NCs
-for i, n in enumerate(N):
+for i, n in enumerate(tqdm(N)):
     row = []
     row2 = []
 
@@ -27,9 +28,10 @@ for i, n in enumerate(N):
         count = 0
         av = 0
         for g in G:
-            if has_noiseless_subsystem(g):
-                count += 1
             c = count_noiseless_subsystems(g)
+
+            if c > 0:
+                count += 1
             av += c
 
         z = count / It
@@ -42,8 +44,6 @@ for i, n in enumerate(N):
 
         if z2 != 0 and z2 < min2:
             min2 = z2
-
-        print("Iteration: " + str(i * len(P) + j + 1) + " of " + str(len(N) * len(P)))
 
         row.append(z)
         row2.append(z2)

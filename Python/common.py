@@ -7,11 +7,11 @@ tol = 1e-15
 
 
 def get_size(ns: np.array):
-    return len([x for x in ns if x != 0])
+    return len([x for x in ns if abs(x) > tol])
 
 
 def get_component_size_laplacian(m: np.array, ns: np.array):
-    if all(m.dot(ns) == 0):
+    if all(m.dot(ns) < tol):
         return get_size(ns)
     else:
         prev = 0

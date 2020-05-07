@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def heatmap(data, row_labels="", col_labels="",
+def heatmap(data, row_labels="", col_labels="", end = 0,
              ax=None, cbar_kw=None, cbarlabel="", **kwargs):
     """
     Create a heatmap from a numpy array and two lists of labels.
@@ -39,11 +39,11 @@ def heatmap(data, row_labels="", col_labels="",
     cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
 
     # We want to show all ticks...
-    ax.set_xticks(np.linspace(-1, data.shape[1] - 1, 4, dtype=int))
-    ax.set_yticks(np.linspace(-1, data.shape[0] - 1, 4, dtype=int))
+    ax.set_xticks(np.linspace(-1, data.shape[1] - 1, end/5+1, dtype=int))
+    ax.set_yticks(np.linspace(-1, data.shape[0] - 1, end/5+1, dtype=int))
     # ... and label them with the respective list entries.
-    ax.set_xticklabels(col_labels if col_labels != "" else [0, 5, 10, 15])
-    ax.set_yticklabels(row_labels if row_labels != "" else [0, 5, 10, 15])
+    ax.set_xticklabels(col_labels if col_labels != "" else np.arange(0, end + 1, 5))
+    ax.set_yticklabels(row_labels if row_labels != "" else np.arange(0, end + 1, 5))
 
     # Let the ticks appear inside on the top and right.
     ax.tick_params(top=True, right=True, direction="in")
