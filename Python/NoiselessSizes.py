@@ -3,9 +3,9 @@ from plotter import *
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-p1 = .8
+p1 = .05
 N = 15
-It = 10000
+It = 5000
 
 res = np.zeros([N, N])
 
@@ -30,6 +30,7 @@ def old_version():
 def new_version(dat):
     nzit = 0
     total = 0
+    notif = True
 
     for i in tqdm(range(It)):
         g = nx.erdos_renyi_graph(N, p1)
@@ -62,16 +63,23 @@ def new_version(dat):
             dat += temp / nzcc
             total += s_tot / nzcc
 
-            if abs(np.sum(np.nan_to_num(dat)) - total) > tol * It / np.sqrt(2):
-                print("Exceeded the It/sqrt(2) bound on the error")
+            if abs(np.sum(np.nan_to_num(dat)) - total) > tol * It * N:
+                if notif:
+                    print("Exceeded the maximum bound on the error")
+                notif = False
+            else:
+                notif = True
 
     return dat / nzit
 
 
 data = new_version(res)
 
-fig, ax = plt.subplots()
-im, cbar = heatmap(data, end=N, ax=ax, cmap="YlGnBu")
-ax.invert_yaxis()
+fig, ax = plt.subplots(2, 1)
+im, cbar = heatmap(data, end=N, ax=ax[0], cmap="YlGnBu")
+ax[0].invert_yaxis()
+
+ax[1].bar(np.arange(1, N + 1), np.sum(np.nan_to_num(data), axis=1))
+ax[1].set_xlim(1, 15)
 
 plt.show()
