@@ -21,30 +21,71 @@ Lambda = 0.4 * omega[1] * np.array([
 Omega, F = np.linalg.eigh(Lambda)
 Gamma = np.sum(F, 0)**2 * gamma
 
-
-def eq_matrix():
-    a = np.diag(-np.tile(Gamma, 2)/2)
-    np.fill_diagonal(a[:, N:], -Omega ** 2)
-    np.fill_diagonal(a[N:], np.ones(N))
-    return a
+D = np.zeros(N)
 
 
-A = eq_matrix()
+def tri(n):
+    return n*(n+1)//2
 
 
-def f(x):
+def d(why_do_u_care_about_shadowing, and_case_of_the_parameter):
+    return 1 if why_do_u_care_about_shadowing == and_case_of_the_parameter else 0
+
+
+def num(urgh, blegh):
+    return tri(N - 1) - tri(N - 1 - urgh) + blegh
+
+
+A = np.diag(-np.tile(Gamma, 2)/2)
+np.fill_diagonal(A[:, N:], -Omega ** 2)
+np.fill_diagonal(A[N:], np.ones(N))
+
+# The number of unique auto/cross-correlations for one of QiQj, PiPj, PiQj
+M = tri(N)
+B = np.zeros([3*M, 3*M])
+
+for i in range(N):
+    for j in range(i, N):
+        ind = num(i, j)
+        rev = num(j, i)
+        
+        # The diagonal terms
+        B[ind, ind] = B[ind + M, ind + M] =\
+            B[ind + 2*M, ind + 2*M] = - (Gamma[i] + Gamma[j])/2
+        
+        # The non-diagonal terms
+        B[ind, ind + 2*M] = B[ind, rev(j, i) + 2*M] = 1/2
+        
+        B[ind + M, ind + 2*M] = -Omega[i]**2/2
+        B[ind + M, rev + 2*M] = -Omega[j]**2/2
+        
+        B[ind + 2*M, ind] = -2*Omega[j]
+        B[ind + 2*M, ind + M] = 2
+        
+    
+# The constant vector to be added (dY/dt = B*Y + L)
+L = np.zeros(3*M)
+for i in range(M):
+    L[num(i, i)] = L[num(i, i) + M] = -D[i]/2/Omega[i]**2
+
+
+def a(x):
     return A.dot(x)
+
+
+def b(y):
+    return B.dot(y) + L
 
 
 def euler_forward(x):
     return np.linalg.inv(np.identity(2*N) - dt * A).dot(x)
 
 
-def euler_backward(x):
-    return x + dt*f(x)
+def euler_backward(f, x):
+    return x + dt * f(x)
 
 
-def rk4(x):
+def rk4(f, x):
     k1 = f(x)
     k2 = f(x + dt*k1/2)
     k3 = f(x + dt*k2/2)
@@ -64,7 +105,7 @@ def first_order():
     X = np.concatenate((P, Q))
 
     for i in range(1, it):
-        X[:, i] = rk4(X[:, i-1])
+        X[:, i] = rk4(a, X[:, i - 1])
 
     P, Q = np.reshape(X, [2, N, it])
 
@@ -88,9 +129,14 @@ def first_order():
 
 
 def second_order():
-    pq_0 = pp_0 = qq_0 = np.array([1]*(N*(N-1)//2))
-    PQ = PP = QQ = np.zeros([N*(N-1)//2, it])
-    PQ[0]
+    pq_0 = pp_0 = qq_0 = np.array([1]*M)
+    PQ = PP = QQ = np.zeros([M, it])
+    QQ[:, 0] = 1
+    
+    Y = np.concatenate((QQ, PP, PQ))
+    
+    for i in range(1, it):
+        Y[:, i] = rk4(b, Y)
 
 
 first_order()
