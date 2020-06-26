@@ -77,14 +77,6 @@ def b(y):
     return B.dot(y) + L
 
 
-def euler_forward(x):
-    return np.linalg.inv(np.identity(2*N) - dt * A).dot(x)
-
-
-def euler_backward(f, x):
-    return x + dt * f(x)
-
-
 def rk4(f, x):
     k1 = f(x)
     k2 = f(x + dt*k1/2)
