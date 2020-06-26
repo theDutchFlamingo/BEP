@@ -1,41 +1,30 @@
 import numpy as np
+import matplotlib
+matplotlib.rcParams['text.usetex'] = True
 from matplotlib import pyplot as plt
 
 N = 3
-T_F = 15
-it = 1500
+T_F = 75
+it = 15000
 dt = T_F/it
 T = np.arange(0, T_F, dt)
 
-P_0 = np.array([1, 0.5, -1])
-Q_0 = np.array([-1, 0, 1])
-
-Omega = np.array([1.2, 1, 1.8])
-gamma = 0.07 * Omega[1]
-Lambda = Omega[1] * np.array([
-    [0, 0.4, 0],
-    [0.4, 0, 0.4],
-    [0, 0.4, 0]
+omega = np.array([1.2, 1, 1.8])
+gamma = 0.07 * omega[1]
+Lambda = 0.4 * omega[1] * np.array([
+    [0, 1, 1],
+    [1, 0, 1],
+    [1, 1, 0]
 ])
 
-F = np.linalg.eigh(Lambda)[1]
-
+# The rotation matrix diagonalizing the adjacency matrix
+Omega, F = np.linalg.eigh(Lambda)
 Gamma = np.sum(F, 0)**2 * gamma
-
-P = np.zeros([N, it])
-Q = np.zeros([N, it])
-X = np.concatenate((P, Q))
-
-Q[:, 0] = Q_0
-P[:, 0] = P_0
-X[:, 0] = np.concatenate((Q_0, P_0))
-
-A_S = np.array([[[-Gamma[i] / 2, -Omega[i] ** 2], [1, -Gamma[i] / 2]] for i in range(N)])
 
 
 def eq_matrix():
     a = np.diag(-np.tile(Gamma, 2)/2)
-    np.fill_diagonal(a[:, N:], -Omega**2)
+    np.fill_diagonal(a[:, N:], -Omega ** 2)
     np.fill_diagonal(a[N:], np.ones(N))
     return a
 
@@ -63,11 +52,45 @@ def rk4(x):
     return x + dt/6*(k1 + 2*k2 + 2*k3 + k4)
 
 
-for i in range(1, it):
-    X[:, i] = rk4(X[:, i-1])
+def first_order():
+    p_0 = np.array([0.5, 1, -0.5])
+    q_0 = np.array([-1, 0, 1])
 
-for n in range(N, 2*N):
-    plt.plot(T, X[n, :])
+    Q = P = np.zeros([N, it])
 
-plt.legend(["Node 1", "Node 2", "Node 3"])
-plt.show()
+    Q[:, 0] = F.T.dot(q_0)
+    P[:, 0] = p_0
+
+    X = np.concatenate((P, Q))
+
+    for i in range(1, it):
+        X[:, i] = rk4(X[:, i-1])
+
+    P, Q = np.reshape(X, [2, N, it])
+
+    q = F.dot(Q)
+
+    for n in range(N):
+        plt.plot(T, q[n])
+
+    plt.legend(["Node 1", "Node 2", "Node 3"])
+    plt.ylabel("$\\left<q_i\\right>$")
+    plt.xlabel("t")
+    plt.show()
+
+    for n in range(N):
+        plt.plot(T, Q[n])
+
+    plt.legend(["Mode 1", "Mode 2", "Mode 3"])
+    plt.ylabel("$\\left<q_i\\right>$")
+    plt.xlabel("t")
+    plt.show()
+
+
+def second_order():
+    pq_0 = pp_0 = qq_0 = np.array([1]*(N*(N-1)//2))
+    PQ = PP = QQ = np.zeros([N*(N-1)//2, it])
+    PQ[0]
+
+
+first_order()
