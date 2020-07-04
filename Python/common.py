@@ -80,7 +80,7 @@ def get_connected_components(g: nx.Graph, ns: np.array = None):
     return tuple(ret)
 
 
-def null_space(a, eps=1e-15):
+def null_space(a, eps=tol):
     u, s, vh = linalg.svd(a)
     null_mask = (s <= eps)
     return transpose(compress(null_mask, vh, axis=0))
