@@ -1,29 +1,10 @@
-from moments_common import *
-from common import tol
-import matplotlib
-from matplotlib import pyplot as plt
-matplotlib.rcParams['text.usetex'] = True
-
-
-def tri(n):
-    return n*(n+1)//2
-
-
-def num(lesser, greater):
-    """
-    :param lesser: 
-    :param greater: should be at least :param lesser
-    :return: 
-    """
-    return tri(N - 1) - tri(N - 1 - lesser) + greater
-
+from moments_plotter import *
 
 A = np.diag(-np.tile(Gamma, 2)/2)
 np.fill_diagonal(A[:, N:], -Omega ** 2)
-np.fill_diagonal(A[N:], np.ones(N))
+np.fill_diagonal(A[N:], 1)
 
 # The number of unique auto/cross-correlations for one of QiQj, PiPj, PiQj
-M = tri(N)
 B = np.zeros([2*M + N**2, 2*M + N**2])
 
 for i in range(N):
@@ -65,20 +46,6 @@ def b(y):
     :return: B * y + L
     """
     return B.dot(y) + L
-
-
-def rk4(f, x):
-    """
-    An implementation of the classical Runge-Kutta method
-    :param f: the function such that d/dt x = f(x)
-    :param x: a data point
-    :return: the next data point, based on RK4
-    """
-    k1 = f(x)
-    k2 = f(x + dt*k1/2)
-    k3 = f(x + dt*k2/2)
-    k4 = f(x + dt*k3)
-    return x + dt/6*(k1 + 2*k2 + 2*k3 + k4)
 
 
 def first_order():
@@ -162,174 +129,6 @@ def second_order():
     return qq, QQ, pp
 
 
-def color_pick(n):
-    color = "red"
-
-    if abs(Gamma[n]) < tol:
-        color = "mediumspringgreen"
-    elif abs(Gamma[n]) < max(Gamma) / quasi_ratio and not any(Gamma < tol):
-        color = "orange"
-
-    return color
-
-
-def calc_u(pos, mom, n):
-    U_0 = Omega[n]**2 * pos[num(n, n), 0] + mom[num(n, n), 0]
-    return U_0 * np.exp(-Gamma[n] * T)
-
-
-def calc_u_2(pos, mom, n):
-    U_0 = Omega[n]**2 * pos[num(n, n), 0] + mom[num(n, n), 0]
-    return (U_0-D[n]/Gamma[n]) * np.exp(-Gamma[n] * T) + D[n]/Gamma[n]  # Last term if the + is correct
-
-
-def calc_v(pos, mom, n, r=None):
-    m = num(n, n)
-    U_0 = Omega[n]**2 * pos[m, 0] + mom[m, 0]
-    B_n = C[n] - U_0 + 2*Omega[n]**2 * pos[m, 0]
-    dQ_0 = (r[n, 0] if r is not None else 0) - Gamma[n] * pos[m, 0] - D[n]/2/Omega[n]**2
-    A_n = (2*Omega[n]**2 * dQ_0 + (U_0 + 2*B_n) * Gamma[n])/2/Omega[n]
-    return -C[n] + np.exp(-Gamma[n] * T) * (A_n * np.sin(2*Omega[n]*T) +
-                                            B_n * np.cos(2*Omega[n]*T))
-
-
-def calc_v_2(pos, mom, n, r=None):
-    m = num(n, n)
-    B_n = Omega[n]**2 * pos[m, 0] - mom[m, 0]
-    A_n = Omega[n] * (r[(N+1)*n, 0] if r is not None else 0)
-    return np.exp(-Gamma[n]*T) * (A_n * np.sin(2*Omega[n]*T) +
-                                  B_n * np.cos(2*Omega[n]*T))
-
-
-def first_plot_combined(funcs, name):
-    for n in range(N):
-        plt.plot(T, funcs[n])
-
-    plt.legend([f"Node {n + 1}" for n in range(N)])
-    plt.ylabel(f"$\\left<{name}_i\\right>$")
-    plt.xlabel("$t$")
-    plt.show()
-    
-    
-def first_plot_separate(funcs, name, colorized=False, mom=None):
-    for n in range(N):
-        plt.subplot(N, 1, n + 1)
-        
-        color = color_pick(n) if colorized else ""
-        
-        plt.plot(T, funcs[n], color)
-        
-        if mom is not None:
-            d = funcs[n, 0]
-            c = (2 * mom[n, 0] + Gamma[n] * d)/(2*Omega[n])
-            plt.plot(T, np.exp(-Gamma[n]*T/2) * (c * np.sin(Omega[n]*T) +
-                                                 d * np.cos(Omega[n]*T)), "k:")
-            plt.legend(["Solution", "Expected"])
-        
-        plt.ylabel(f"$\\left<{name}_{n + 1}\\right>$")
-        
-    plt.xlabel("$t$")
-    plt.show()
-
-
-def second_plot_combined(funcs, name):
-    for m in range(M):
-        plt.plot(T[:it_med], funcs[m, :it_med])
-
-    plt.legend([f"Node {(n, m)}" for n in range(N) for m in range(n, N)])
-    plt.ylabel(f"$\\left<{name}_i {name}_j\\right>$")
-    plt.xlabel("$t$")
-    plt.show()
-
-
-def second_plot_separate(funcs, name, colorized=False):
-    for n in range(N):
-        for m in range(n, N):
-            plt.subplot(N, N, 1 + N*n + m)
-            
-            color = ""
-            
-            if n == m:
-                color = color_pick(n) if colorized else ""
-
-                plt.xlabel("$t$")
-                plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$")
-            else:
-                plt.ylabel(f"$\\left<{name}_{n + 1} {name}_{m + 1}\\right>$")
-
-            plt.plot(T[:it_short], funcs[num(n, m), :it_short], color)
-    
-    plt.show()
-
-
-def second_plot_diagonal(pos, name, colorized=False, mom=None, r=None):
-    for n in range(N):
-        plt.subplot(N, 1, n + 1)
-
-        color = color_pick(n) if colorized else ""
-        
-        plt.plot(T[:it_med], pos[num(n, n), :it_med], color)
-        
-        if mom is not None:
-            plt.plot(T[:it_med], ((calc_u_2(pos, mom, n) + calc_v_2(pos, mom, n, r))/2/Omega[n]**2)[:it_med], "k:")
-            plt.legend(["Solution", "Expected"])
-        
-        plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$")
-
-    plt.xlabel("$t$")
-    plt.show()
-
-
-def second_plot_cross(funcs, name):
-    index = 1
-    
-    for n in range(N):
-        for m in range(n + 1, N):
-            plt.subplot(M - N, 1, index)
-            index += 1
-            plt.plot(T[:it_med], funcs[num(n, m), :it_med])
-            plt.ylabel(f"$\\left<{name}_{n + 1}{name}_{m + 1}\\right>$")
-    
-    plt.xlabel("$t$")
-    plt.show()
-
-
-def second_plot_u(qq, pp, name1, name2, colorized=False, expect=False):
-    for n in range(N):
-        plt.subplot(N, 1, n + 1)
-
-        color = color_pick(n) if colorized else ""
-        
-        plt.plot(T[:it_med], (Omega[n]**2 * qq[num(n, n)] + pp[num(n, n)])[:it_med], color)
-        plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 + {name2}_{n + 1}^2\\right>$")
-        
-        if expect:
-            plt.plot(T[:it_med], calc_u_2(qq, pp, n)[:it_med], "k:")
-            plt.legend(["Solution", "Expected"])
-            
-    plt.xlabel("$t$")
-    plt.show()
-
-
-def second_plot_v(qq, pp, name1, name2, colorized=False, expect=False):
-    for n in range(N):
-        plt.subplot(N, 1, n + 1)
-
-        color = color_pick(n) if colorized else ""
-
-        plt.plot(T[:it_med], (Omega[n]**2 * qq[num(n, n)] - pp[num(n, n)])[:it_med], color)
-        plt.plot(T[:it_med], -C[n] * np.ones(it)[:it_med],
-                 linestyle="dashed", color="lightgray")
-        plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 - {name2}_{n + 1}^2\\right>$")
-
-        if expect:
-            plt.plot(T[:it_med], calc_v(qq, pp, n)[:it_med], "k:")
-            plt.legend(["Solution", "Offset (expected)", "Expected"])
-
-    plt.xlabel("$t$")
-    plt.show()
-
-
 def get_osc_data(func):
     pass
 
@@ -343,7 +142,7 @@ print("Omega:", Omega)
 
 nodes, modes, momenta = first_order()
 first_plot_separate(nodes, "q")
-first_plot_separate(modes, "Q", True)
+first_plot_separate(modes, "Q", True, momenta)
 
 nodes, modes, momenta = second_order()
 # second_plot_separate(nodes, "q")  # Not used in report
