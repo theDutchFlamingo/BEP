@@ -6,6 +6,10 @@ from scipy import linalg, compress, transpose
 tol = 1e-15
 
 
+def scream():
+    print("AAAASDFFDSF $T%YH^J&UBSVD h%$G what is going on? aweahfkljdhfaf")
+
+
 def get_size(ns: np.array):
     return len([x for x in ns if abs(x) > tol])
 

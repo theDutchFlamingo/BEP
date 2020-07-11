@@ -1,14 +1,16 @@
 from moments_plotter import *
 from numpy import sqrt
 from tqdm import tqdm
+from storage import *
+from common import scream
 import json
 
-s = 5  # The amount of states that we consider
+s = 2  # The amount of states that we consider
 K = s**N  # The amount of states
 K2 = K**2
 
-rho_0 = np.identity((K, K))/K
-# rho_0[0, -1] = rho_0[-1, 0] = 1
+rho_0 = np.zeros((K, K))/K
+rho_0[0, 0] = 1
 
 
 # Momentum operator for node i
@@ -64,6 +66,10 @@ P = np.array([p(i) for i in range(N)])
 Q = np.array([q(i) for i in range(N)])
 H = h()
 
+print("P:", P)
+print("Q:", Q)
+print("H:", H)
+
 
 def com(a, b):
     if 2 == len(b.shape) and len(a.shape) == 2:
@@ -99,29 +105,32 @@ def liouville(rho):
     Ome = Omega[:, np.newaxis, np.newaxis]
     Ddd =     D[:, np.newaxis, np.newaxis]
     
-    return np.sum(-1j * com(H, rho)
+    return np.sum(- 1j  * com(H, rho)
                   - 1/4 * 1j * Gam * (com(Q, anti(P, rho)) - com(P, anti(Q, rho)))
                   - 1/4 * Ddd * (com(Q, com(Q, rho)) - com(P, com(P, rho))/Ome**2),
                   axis=0)
 
 
-Rho = np.zeros((it, K, K))
+Rho = np.zeros((it, K, K), dtype=complex)
 Rho[0] = rho_0
 
 recalculate = True
 
 if recalculate:
-    for t in tqdm(range(1, it)):
+    for t in (range(1, it)):
+        print(Rho[t-1])
         Rho[t] = rk4(liouville, Rho[t - 1])
+        if np.nan in Rho:
+            scream()
         
-    with open("density.txt", "w") as dens:
-        print(json.dumps(Rho.tolist()), file=dens)
+    write("density", Rho)
 else:
-    with open("density.txt", "r") as dens:
-        Rho = np.array(json.loads(dens.read()))
+    Rho = read("density")
 
 
 ev_Q = np.array([[np.trace(Q[i].dot(Rho[t])) for t in range(it)] for i in range(N)])
 ev_P = np.array([[np.trace(P[i].dot(Rho[t])) for t in range(it)] for i in range(N)])
+
+print(ev_Q)
 
 first_plot_separate(ev_Q, "Q", True, ev_P)

@@ -1,8 +1,8 @@
 import numpy as np
 
-N = 3
+N = 2
 T_F = 75
-it = 1500
+it = 15
 it_med = it * 45//T_F
 it_short = it * 15//T_F
 dt = T_F/it
@@ -17,6 +17,10 @@ omega = np.ones(N)
 temp = 10 * omega[1]
 gamma = 0.07 * omega[1]
 
+LambdaM1 = 0.4 * omega[1] * np.array([
+    [0, 1],
+    [1, 0]
+])
 LambdaM3 = 0.4 * omega[1] * np.array([
     [0, 1, 1],
     [1, 0, 1],
@@ -27,7 +31,7 @@ LambdaM2 = 0.4 * omega[1] * np.array([
     [1, 0, 1],
     [0, 1, 0]
 ])
-Lambda = LambdaM2  # The adjacency matrix which we are currently investigating
+Lambda = LambdaM1  # The adjacency matrix which we are currently investigating
 
 k_m = np.max(np.sum(Lambda, 0))  # Constant to assure positivity
 HO = np.diag(omega**2 + 2 * k_m)
