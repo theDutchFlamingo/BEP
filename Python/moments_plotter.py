@@ -18,18 +18,21 @@ def color_pick(n):
     return color
 
 
-def calc_u(pos, mom, n):
-    U_0 = Omega[n]**2 * pos[num(n, n), 0] + mom[num(n, n), 0]
+def calc_u(pos, mom, n, contains_all=True):
+    m = num(n, n) if contains_all else n
+    U_0 = Omega[n]**2 * pos[m, 0] + mom[m, 0]
     return U_0 * np.exp(-Gamma[n] * T)
 
 
-def calc_u_2(pos, mom, n):
-    U_0 = Omega[n]**2 * pos[num(n, n), 0] + mom[num(n, n), 0]
-    return (U_0-D[n]/Gamma[n]) * np.exp(-Gamma[n] * T) + D[n]/Gamma[n]  # Last term if the + is correct
+# If the + is correct
+def calc_u_2(pos, mom, n, contains_all=True):
+    m = num(n, n) if contains_all else n
+    U_0 = Omega[n]**2 * pos[m, 0] + mom[m, 0]
+    return (U_0-D[n]/Gamma[n]) * np.exp(-Gamma[n] * T) + D[n]/Gamma[n]
 
 
-def calc_v(pos, mom, n, r=None):
-    m = num(n, n)
+def calc_v(pos, mom, n, contains_all=True, r=None):
+    m = num(n, n) if contains_all else n
     U_0 = Omega[n]**2 * pos[m, 0] + mom[m, 0]
     B_n = C[n] - U_0 + 2*Omega[n]**2 * pos[m, 0]
     dQ_0 = (r[n, 0] if r is not None else 0) - Gamma[n] * pos[m, 0] - D[n]/2/Omega[n]**2
@@ -38,8 +41,9 @@ def calc_v(pos, mom, n, r=None):
                                             B_n * np.cos(2*Omega[n]*T))
 
 
-def calc_v_2(pos, mom, n, r=None):
-    m = num(n, n)
+# If the + is correct
+def calc_v_2(pos, mom, n, contains_all=True, r=None):
+    m = num(n, n) if contains_all else n
     B_n = Omega[n]**2 * pos[m, 0] - mom[m, 0]
     A_n = Omega[n] * (r[(N+1)*n, 0] if r is not None else 0)
     return np.exp(-Gamma[n]*T) * (A_n * np.sin(2*Omega[n]*T) +
@@ -107,16 +111,20 @@ def second_plot_separate(funcs, name, colorized=False):
     plt.show()
 
 
-def second_plot_diagonal(pos, name, colorized=False, mom=None, r=None):
+def second_plot_diagonal(pos, name, colorized=False,
+                         contains_all=True, mom=None, r=None):
     for n in range(N):
+        m = num(n, n) if contains_all else n
+        
         plt.subplot(N, 1, n + 1)
 
         color = color_pick(n) if colorized else ""
 
-        plt.plot(T[:it_med], pos[num(n, n), :it_med], color)
+        plt.plot(T[:it_med], pos[m, :it_med], color)
 
         if mom is not None:
-            plt.plot(T[:it_med], ((calc_u_2(pos, mom, n) + calc_v_2(pos, mom, n, r))/2/Omega[n]**2)[:it_med], "k:")
+            plt.plot(T[:it_med], ((calc_u_2(pos, mom, n, contains_all) +
+                                   calc_v_2(pos, mom, n, contains_all, r))/2/Omega[n]**2)[:it_med], "k:")
             plt.legend(["Solution", "Expected"])
 
         plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$")
@@ -173,4 +181,3 @@ def second_plot_v(qq, pp, name1, name2, colorized=False, expect=False):
 
     plt.xlabel("$t$")
     plt.show()
-    

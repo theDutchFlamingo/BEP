@@ -1,8 +1,8 @@
 import numpy as np
 
-N = 2
+N = 3
 T_F = 75
-it = 15
+it = 150
 it_med = it * 45//T_F
 it_short = it * 15//T_F
 dt = T_F/it
@@ -12,26 +12,30 @@ T = np.arange(0, T_F, dt)
 # should be to classify as noiseless
 quasi_ratio = 20
 
-# omega = np.array([1.2, 1, 1.8])
-omega = np.ones(N)
-temp = 10 * omega[1]
-gamma = 0.07 * omega[1]
+omega_1 = 1
 
-LambdaM1 = 0.4 * omega[1] * np.array([
+LambdaM0 = np.array([[0]])
+LambdaM1 = 0.4 * omega_1 * np.array([
     [0, 1],
     [1, 0]
 ])
-LambdaM3 = 0.4 * omega[1] * np.array([
+LambdaM3 = 0.4 * omega_1 * np.array([
     [0, 1, 1],
     [1, 0, 1],
     [1, 1, 0]
 ])
-LambdaM2 = 0.4 * omega[1] * np.array([
+LambdaM2 = 0.4 * omega_1 * np.array([
     [0, 1, 0],
     [1, 0, 1],
     [0, 1, 0]
 ])
-Lambda = LambdaM1  # The adjacency matrix which we are currently investigating
+# The adjacency matrix which we are currently investigating
+Lambda = LambdaM0 if N == 1 else LambdaM1 if N == 2 else LambdaM2
+
+# omega = np.array([1.2, 1, 1.8])
+omega = np.ones(N)
+temp = 10 * omega_1
+gamma = 0.07 * omega_1
 
 k_m = np.max(np.sum(Lambda, 0))  # Constant to assure positivity
 HO = np.diag(omega**2 + 2 * k_m)
