@@ -2,53 +2,49 @@ from moments_plotter import *
 from numpy import sqrt, array, trace, zeros, kron
 from tqdm import tqdm
 from common import scream
+import qutip
 import warnings
 warnings.filterwarnings("ignore")
 
-s = 5  # The amount of states that we consider per node
+s = 2  # The amount of states that we consider per node
 K = s ** N  # The amount of states
 
-# The basic 2-level density matrix of one node with nonzero Q-eigenvalue
-rho_Q10 = array([
-    [2, 1],
-    [1, 2]
-])
 
-rho_P10 = array([
-    [2, -1j],
-    [+1j, 2]
-])
+# The s-level density matrix of one node with nonzero Q-eigenvalue
+def rho_q_basic():
+    rho_Q10s = zeros((s, s))
+    np.fill_diagonal(rho_Q10s, 2)
+    
+    if s > 1:
+        np.fill_diagonal(rho_Q10s[1:], 1)
+        np.fill_diagonal(rho_Q10s[:, 1:], 1)
+    return rho_Q10s
 
-# The s-level density matrix of one node with some nonzero Q-eigenvalue
-rho_Q10s = zeros((s, s))
-# rho_Q10s = 1
-np.fill_diagonal(rho_Q10s, 2)
-np.fill_diagonal(rho_Q10s[1:], 1)
-np.fill_diagonal(rho_Q10s[:, 1:], 1)
 
-rho_P10s = zeros((s, s))
-# rho_P10s = 1
-np.fill_diagonal(rho_P10s[1:], 1)
-np.fill_diagonal(rho_P10s[:, 1:], -1)
-rho_P10s = rho_P10s * 1j
-np.fill_diagonal(rho_P10s, -2)
+# The s-level density matrix of one nodes with nonzero P-eigenvalue
+def rho_p_basic():
+    rho_P10s = zeros((s, s), dtype=complex)
+    np.fill_diagonal(rho_P10s, 2)
+    
+    if s > 1:
+        np.fill_diagonal(rho_P10s[1:], 1j)
+        np.fill_diagonal(rho_P10s[:, 1:], -1j)
+    return rho_P10s
 
-# print(rho_P10)
-# print(rho_P10s)
 
-# The s-level density matrix of several nodes with nonzero Q-eigenvalue for node 0
-rho_QN0 = kron(np.identity(s ** (N - 1)), rho_Q10s) / K
-# Nonzero for node N-1
-rho_QNN_1 = kron(kron(rho_Q10s, rho_Q10s), rho_Q10s) / K
-rho_PNN_1 = kron(rho_P10s, np.identity(s ** (N - 1))) / K
-
-rho_0 = rho_QNN_1 - rho_PNN_1
-
+# The s-level density matrix of several nodes with nonzero eigenvalue for some operator
+def rho_init(base):
+    ret = sum([kron(kron(np.identity(s**n), base), np.identity(s**(N - n - 1)))
+                      for n in range(N)])
+    print(ret)
+    return ret / trace(ret)
 
 
 def assert_density(dens):
     # Assert Hermitian
     assert np.all(dens == dens.conj().T)
+    # Assert unit trace
+    assert abs(trace(dens) - 1) < tol
     # Assert positive
     assert all(np.linalg.eigvalsh(dens) > 0)
 
@@ -107,45 +103,47 @@ def com(a, b):
     if 2 == len(b.shape) and len(a.shape) == 2:
         return a.dot(b) - b.dot(a)
     elif len(b.shape) == 2:
-        return array([a[i].dot(b) - b.dot(a[i])
-                      for i in range(a.shape[0])])
+        return array([a[n].dot(b) - b.dot(a[n])
+                      for n in range(a.shape[0])])
     elif len(a.shape) == 2:
-        return array([a.dot(b[i]) - b[i].dot(a)
-                      for i in range(b.shape[0])])
+        return array([a.dot(b[n]) - b[n].dot(a)
+                      for n in range(b.shape[0])])
     else:
-        return array([a[i].dot(b[i]) - b[i].dot(a[i])
-                      for i in range(a.shape[0])])
+        return array([a[n].dot(b[n]) - b[n].dot(a[n])
+                      for n in range(a.shape[0])])
 
 
 def anti(a, b):
     if 2 == len(b.shape) and len(a.shape) == 2:
         return a.dot(b) + b.dot(a)
     elif len(b.shape) == 2:
-        return array([a[i].dot(b) + b.dot(a[i])
-                         for i in range(a.shape[0])])
+        return array([a[n].dot(b) + b.dot(a[n])
+                         for n in range(a.shape[0])])
     elif len(a.shape) == 2:
-        return array([a.dot(b[i]) + b[i].dot(a)
-                         for i in range(b.shape[0])])
+        return array([a.dot(b[n]) + b[n].dot(a)
+                         for n in range(b.shape[0])])
     else:
-        return array([a[i].dot(b[i]) + b[i].dot(a[i])
-                         for i in range(a.shape[0])])
+        return array([a[n].dot(b[n]) + b[n].dot(a[n])
+                         for n in range(a.shape[0])])
 
 
 def expval(op, dens):
     return trace(op.dot(dens))
 
 
-P = array([p(i) for i in range(N)])
-Q = array([q(i) for i in range(N)])
+rho_0 = rho_init(rho_q_basic() + rho_p_basic())
+assert_density(rho_0)
+P = array([p(n) for n in range(N)])
+Q = array([q(n) for n in range(N)])
 H = h()
 
+print(expval(Q[0], rho_0))
 # print("P:", P)
 # print("Q:", Q)
 # print("H:", H)
 
-print(np.linalg.eigvalsh(-1j*com(H, rho_0)))
-# assert_density(-1j*com(H, rho_0))
-# print(com(P[2], anti(Q[2], rho_0))[0])
+print(np.linalg.eigvalsh(rho_0 - dt*1j*com(H, rho_0)))
+# print(trace(-1j*com(H, rho_0)))  # Should be 0
 
 
 # The Liouvillian superoperator
@@ -164,15 +162,14 @@ def liouville_explicit(rho):
     Sum = 0
 
     # Sum over all the nodes
-    for i in range(N):
-        Sum += 1j * Gamma[i] * (com(Q[i], anti(P[i], rho)) - com(P[i], anti(Q[i], rho)))
-        Sum += D[i] * (com(Q[i], com(Q[i], rho)) - com(P[i], com(P[i], rho)) / Omega[i] ** 2)
-    
-    # if random() < 0.01:
-    #     print(Sum)
+    for n in range(N):
+        Sum += 1j * Gamma[n] * (com(Q[n], anti(P[n], rho)) - com(P[n], anti(Q[n], rho)))
+        Sum += D[n] * (com(Q[n], com(Q[n], rho)) - com(P[n], com(P[n], rho)) / Omega[n] ** 2)
 
     return -1j * com(H, rho) - 1 / 4 * Sum
 
+
+print(np.linalg.eigvalsh(liouville(rho_0)))
 
 Rho = np.zeros((it, K, K), dtype=complex)
 Rho[0] = rho_0
@@ -184,40 +181,43 @@ ev_P = zeros((N, it))
 ev_QQ = zeros((M, it))
 ev_PP = zeros((M, it))
 
+screamed = False
+
 if recalculate:
-    for t in tqdm(range(1, it)):
-        Rho[t] = rk4(liouville_explicit, Rho[t - 1])
+    for t in tqdm(range(it)):
+        if t != 0:
+            Rho[t] = rk4(liouville_explicit, Rho[t - 1])
         
-        print(t)
         # assert np.all(Rho[t] == Rho[t].conj().T)
         # assert_density(Rho[t])
+        # print(trace(Rho[t]))
 
-        ev_Q[:, t] = array([expval(Q[i], Rho[t]) for i in range(N)])
-        ev_P[:, t] = array([expval(P[i], Rho[t]) for i in range(N)])
-        ev_QQ[:, t] = array([expval(Q[i].dot(Q[j]), Rho[t]) for i in range(N) for j in range(i, N)])
-        ev_PP[:, t] = array([expval(P[i].dot(P[j]), Rho[t]) for i in range(N) for j in range(i, N)])
+        ev_Q[:, t] = array([expval(Q[n], Rho[t]) for n in range(N)])
+        ev_P[:, t] = array([expval(P[n], Rho[t]) for n in range(N)])
+        ev_QQ[:, t] = array([expval(Q[n].dot(Q[j]), Rho[t]) for n in range(N) for j in range(n, N)])
+        ev_PP[:, t] = array([expval(P[n].dot(P[j]), Rho[t]) for n in range(N) for j in range(n, N)])
         
-        print(ev_Q[2, t])
-        
-        if np.nan == ev_Q[2, t]:
+        if np.isnan(ev_Q[0, t]) and not screamed:
             scream()
+            screamed = True
 
     np.save("rho.npy", Rho)
 else:
     Rho = np.load("rho.npy")
-    ev_Q = array([[trace(Q[i].dot(Rho[t])) for t in range(it)] for i in range(N)])
-    ev_P = array([[trace(P[i].dot(Rho[t])) for t in range(it)] for i in range(N)])
-    ev_QQ = array([[trace(Q[i].dot(Q[j]).dot(Rho[t])) for t in range(it)] for i in range(N) for j in range(i, N)])
-    ev_PP = array([[trace(P[i].dot(Q[j]).dot(Rho[t])) for t in range(it)] for i in range(N) for j in range(i, N)])
+    ev_Q = array([[expval(Q[n], Rho[t]) for t in range(it)] for n in range(N)])
+    ev_P = array([[expval(P[n], Rho[t]) for t in range(it)] for n in range(N)])
+    ev_QQ = array([[expval(Q[n].dot(Q[j]), Rho[t]) for t in range(it)] for n in range(N) for j in range(n, N)])
+    ev_PP = array([[expval(P[n].dot(P[j]), Rho[t]) for t in range(it)] for n in range(N) for j in range(n, N)])
 
 
 # print("Q:", ev_Q)
 # print("PP:", ev_PP)
 
 # Plots
-plt.yscale("log")
+# plt.yscale("log")
+print(ev_Q[0])
 first_plot_separate(ev_Q, "Q", True, ev_P)
-plt.yscale("symlog")
-plt.ylim([-1e300, 1e300])
-first_plot_separate(ev_P, "P", True)
+# plt.yscale("symlog")
+# plt.ylim([-1e300, 1e300])
+# first_plot_separate(ev_P, "P", True)
 # second_plot_separate(ev_QQ, "Q", colorized=True)
