@@ -50,6 +50,11 @@ def calc_v_2(pos, mom, n, contains_all=True, r=None):
                                   B_n * np.cos(2*Omega[n]*T))
 
 
+# If the + sign is correct
+# calc_u = calc_u_2
+# calc_v = calc_v_2
+
+
 def first_plot_combined(funcs, name):
     for n in range(N):
         plt.plot(T, funcs[n])
@@ -123,8 +128,8 @@ def second_plot_diagonal(pos, name, colorized=False,
         plt.plot(T[:it_med], pos[m, :it_med], color)
 
         if mom is not None:
-            plt.plot(T[:it_med], ((calc_u_2(pos, mom, n, contains_all) +
-                                   calc_v_2(pos, mom, n, contains_all, r))/2/Omega[n]**2)[:it_med], "k:")
+            plt.plot(T[:it_med], ((calc_u(pos, mom, n, contains_all) +
+                                   calc_v(pos, mom, n, contains_all, r))/2/Omega[n]**2)[:it_med], "k:")
             plt.legend(["Solution", "Expected"])
 
         plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$")
@@ -157,7 +162,7 @@ def second_plot_u(qq, pp, name1, name2, colorized=False, expect=False):
         plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 + {name2}_{n + 1}^2\\right>$")
 
         if expect:
-            plt.plot(T[:it_med], calc_u_2(qq, pp, n)[:it_med], "k:")
+            plt.plot(T[:it_med], calc_u(qq, pp, n)[:it_med], "k:")
             plt.legend(["Solution", "Expected"])
 
     plt.xlabel("$t$")

@@ -1,8 +1,8 @@
 import numpy as np
 
 N = 3
-T_F = 75
-it = 150
+T_F = 45
+it = 150000
 it_med = it * 45//T_F
 it_short = it * 15//T_F
 dt = T_F/it
@@ -32,7 +32,7 @@ LambdaM2 = 0.4 * omega_1 * np.array([
 # The adjacency matrix which we are currently investigating
 Lambda = LambdaM0 if N == 1 else LambdaM1 if N == 2 else LambdaM2
 
-# omega = np.array([1.2, 1, 1.8])
+# omega = np.array([1.2, 1, 1.8]) if N == 3 else np.ones(N)
 omega = np.ones(N)
 temp = 10 * omega_1
 gamma = 0.07 * omega_1
@@ -45,6 +45,12 @@ Omega, F = np.linalg.eigh(HO - Lambda)
 Gamma = np.sum(F, 0)**2 * gamma
 D = Gamma * Omega / np.tanh(Omega/2/temp)
 C = Gamma * D / (4*Omega**2 + Gamma**2)
+
+print("D:", D)
+print("F:", F)
+print("C:", C)
+print("Gamma:", Gamma)
+print("Omega:", Omega)
 
 
 def tri(n):

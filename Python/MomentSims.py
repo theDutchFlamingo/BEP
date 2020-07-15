@@ -26,7 +26,7 @@ for i in range(N):
 # The constant vector to be added (dY/dt = B*Y + L)
 L = np.zeros(2*M + N**2)
 for i in range(N):
-    L[num(i, i)] = + D[i]/2/Omega[i]**2  # I derived a - sign, but let's try +
+    L[num(i, i)] = - D[i]/2/Omega[i]**2  # I derived a - sign, but let's try +
     L[num(i, i) + M] = D[i]/2
 
 
@@ -133,21 +133,16 @@ def get_osc_data(func):
     pass
 
 
-print("F:", F)
-print("D:", D)
 print("L:", L)
-print("C:", C)
-print("Gamma:", Gamma)
-print("Omega:", Omega)
 
 nodes, modes, momenta = first_order()
 first_plot_separate(nodes, "q")
-first_plot_separate(modes, "Q", True, momenta)
+first_plot_separate(modes, "Q", colorized=True, mom=momenta)
 
 nodes, modes, momenta = second_order()
 # second_plot_separate(nodes, "q")  # Not used in report
-second_plot_separate(modes, "Q", True)
-second_plot_diagonal(modes, "Q", True, momenta)
-second_plot_cross(modes, "Q")
-second_plot_u(modes, momenta, "Q", "P", True, True)
+# second_plot_separate(modes, "Q", colorized=True)
+# second_plot_diagonal(modes, "Q", colorized=True, mom=momenta)
+# second_plot_cross(modes, "Q")
+# second_plot_u(modes, momenta, "Q", "P", colorized=True, expect=True)
 # second_plot_v(modes, momenta, "Q", "P", True, True)  # Not used in report
