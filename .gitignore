@@ -20,3 +20,5 @@ Maple/
 Python/density.txt
 
 Python/rho.npy
+
+*.npy
