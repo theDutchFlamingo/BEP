@@ -171,8 +171,7 @@ def liouville_explicit(rho):
 
 print(np.linalg.eigvalsh(liouville(rho_0)))
 
-Rho = np.zeros((it, K, K), dtype=complex)
-Rho[0] = rho_0
+Rho = rho_0
 
 recalculate = True
 
@@ -185,23 +184,26 @@ screamed = False
 
 if recalculate:
     for t in tqdm(range(it)):
-        if t != 0:
-            Rho[t] = rk4(liouville_explicit, Rho[t - 1])
+        ev_Q[:, t] = array([expval(Q[n], Rho) for n in range(N)])
+        ev_P[:, t] = array([expval(P[n], Rho) for n in range(N)])
+        ev_QQ[:, t] = array([expval(Q[n].dot(Q[j]), Rho) for n in range(N) for j in range(n, N)])
+        ev_PP[:, t] = array([expval(P[n].dot(P[j]), Rho) for n in range(N) for j in range(n, N)])
+        
+        Rho = rk4(liouville_explicit, Rho)
         
         # assert np.all(Rho[t] == Rho[t].conj().T)
         # assert_density(Rho[t])
         # print(trace(Rho[t]))
-
-        ev_Q[:, t] = array([expval(Q[n], Rho[t]) for n in range(N)])
-        ev_P[:, t] = array([expval(P[n], Rho[t]) for n in range(N)])
-        ev_QQ[:, t] = array([expval(Q[n].dot(Q[j]), Rho[t]) for n in range(N) for j in range(n, N)])
-        ev_PP[:, t] = array([expval(P[n].dot(P[j]), Rho[t]) for n in range(N) for j in range(n, N)])
         
         if np.isnan(ev_Q[0, t]) and not screamed:
             scream()
             screamed = True
 
     np.save("rho.npy", Rho)
+    np.save("eq_Q.npy", ev_Q)
+    np.save("eq_P.npy", ev_P)
+    np.save("eq_QQ.npy", ev_QQ)
+    np.save("eq_PP.npy", ev_PP)
 else:
     Rho = np.load("rho.npy")
     ev_Q = array([[expval(Q[n], Rho[t]) for t in range(it)] for n in range(N)])
