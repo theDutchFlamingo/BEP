@@ -199,17 +199,15 @@ if recalculate:
             scream()
             screamed = True
 
-    np.save("rho.npy", Rho)
     np.save("eq_Q.npy", ev_Q)
     np.save("eq_P.npy", ev_P)
     np.save("eq_QQ.npy", ev_QQ)
     np.save("eq_PP.npy", ev_PP)
 else:
-    Rho = np.load("rho.npy")
-    ev_Q = array([[expval(Q[n], Rho[t]) for t in range(it)] for n in range(N)])
-    ev_P = array([[expval(P[n], Rho[t]) for t in range(it)] for n in range(N)])
-    ev_QQ = array([[expval(Q[n].dot(Q[j]), Rho[t]) for t in range(it)] for n in range(N) for j in range(n, N)])
-    ev_PP = array([[expval(P[n].dot(P[j]), Rho[t]) for t in range(it)] for n in range(N) for j in range(n, N)])
+    eq_Q = np.load("eq_Q.npy")
+    eq_P = np.load("eq_P.npy")
+    eq_QQ = np.load("eq_QQ.npy")
+    eq_PP = np.load("eq_PP.npy")
 
 
 # print("Q:", ev_Q)
