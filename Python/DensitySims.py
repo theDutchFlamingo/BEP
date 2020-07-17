@@ -1,13 +1,10 @@
 from moments_plotter import *
-from numpy import sqrt, array, trace, zeros, kron
+from numpy import array, trace
 from tqdm import tqdm
 from common import scream
-import qutip
+from operators import *
 import warnings
 warnings.filterwarnings("ignore")
-
-s = 2  # The amount of states that we consider per node
-K = s ** N  # The amount of states
 
 
 # The s-level density matrix of one node with nonzero Q-eigenvalue
@@ -40,91 +37,33 @@ def rho_init(base):
     return ret / trace(ret)
 
 
+def is_hermitian(mat):
+    return np.all(abs(mat - mat.conj().T) < tol)
+
+
+def is_unit_trace(mat):
+    return abs(trace(mat) - 1) < tol * 100000  # Very high tolerance
+
+
+def is_pos_def(mat):
+    return all(np.linalg.eigvalsh(mat) > 0)
+
+
 def assert_density(dens):
     # Assert Hermitian
-    assert np.all(dens == dens.conj().T)
+    assert is_hermitian(dens)
     # Assert unit trace
-    assert abs(trace(dens) - 1) < tol
+    assert is_unit_trace(dens)
     # Assert positive
-    assert all(np.linalg.eigvalsh(dens) > 0)
-
-
-# Momentum operator for node i
-def p(i):
-    A = zeros((K, K))
-
-    for n in range(K):
-        # Obtain n_i from n
-        n_i = (n % s ** (i + 1)) // (s ** i)
-
-        if n_i != s - 1:
-            # The lowering operator is applied on the state above
-            A[n, n + s ** i] = sqrt(n + s ** i)
-
-        if n_i != 0:
-            # The raising  operator is applied on the state below
-            A[n, n - s ** i] = -sqrt(n)
-
-    return -1j * sqrt(Omega[i] / 2) * A
-
-
-# Position operator for node i
-def q(i):
-    A = zeros((K, K))
-
-    for n in range(K):
-        # Obtain n_i from n
-        n_i = (n % s ** (i + 1)) // (s ** i)
-
-        if n_i != 0:
-            # First the raising operator is applied on the state below
-            A[n, n - s ** i] = sqrt(n)
-
-        if n_i != s - 1:
-            # Next the lowering operator is applied on the state above
-            A[n, n + s ** i] = sqrt(n + s ** i)
-
-    return 1 / (sqrt(2 * Omega[i])) * A
-
-
-def h():
-    A = zeros((K, K))
-
-    for n in range(K):
-        I = np.arange(N)
-        # Digit representation of n in base s with a maximum of N digits
-        n_I = (n % s ** (I + 1)) // (s ** I)
-        A[n, n] = Omega.dot(n_I + 1 / 2)
-
-    return A
+    assert is_pos_def(dens)
 
 
 def com(a, b):
-    if 2 == len(b.shape) and len(a.shape) == 2:
-        return a.dot(b) - b.dot(a)
-    elif len(b.shape) == 2:
-        return array([a[n].dot(b) - b.dot(a[n])
-                      for n in range(a.shape[0])])
-    elif len(a.shape) == 2:
-        return array([a.dot(b[n]) - b[n].dot(a)
-                      for n in range(b.shape[0])])
-    else:
-        return array([a[n].dot(b[n]) - b[n].dot(a[n])
-                      for n in range(a.shape[0])])
+    return a.dot(b) - b.dot(a)
 
 
 def anti(a, b):
-    if 2 == len(b.shape) and len(a.shape) == 2:
-        return a.dot(b) + b.dot(a)
-    elif len(b.shape) == 2:
-        return array([a[n].dot(b) + b.dot(a[n])
-                         for n in range(a.shape[0])])
-    elif len(a.shape) == 2:
-        return array([a.dot(b[n]) + b[n].dot(a)
-                         for n in range(b.shape[0])])
-    else:
-        return array([a[n].dot(b[n]) + b[n].dot(a[n])
-                         for n in range(a.shape[0])])
+    return a.dot(b) + b.dot(a)
 
 
 def expval(op, dens):
@@ -140,7 +79,7 @@ H = h()
 print(expval(Q[0], rho_0))
 # print("P:", P)
 # print("Q:", Q)
-# print("H:", H)
+print("H:", H)
 
 print(np.linalg.eigvalsh(rho_0 - dt*1j*com(H, rho_0)))
 # print(trace(-1j*com(H, rho_0)))  # Should be 0
@@ -148,17 +87,6 @@ print(np.linalg.eigvalsh(rho_0 - dt*1j*com(H, rho_0)))
 
 # The Liouvillian superoperator
 def liouville(rho):
-    Gam = Gamma[:, np.newaxis, np.newaxis]
-    Ome = Omega[:, np.newaxis, np.newaxis]
-    Ddd = D[:, np.newaxis, np.newaxis]
-
-    return np.sum(- 1j * com(H, rho)
-                  - 1 / 4 * 1j * Gam * (com(Q, anti(P, rho)) - com(P, anti(Q, rho)))
-                  - 1 / 4 * Ddd * (com(Q, com(Q, rho)) - com(P, com(P, rho)) / Ome ** 2),
-                  axis=0)
-
-
-def liouville_explicit(rho):
     Sum = 0
 
     # Sum over all the nodes
@@ -174,48 +102,50 @@ print(np.linalg.eigvalsh(liouville(rho_0)))
 Rho = rho_0
 
 recalculate = True
-
-ev_Q = zeros((N, it))
-ev_P = zeros((N, it))
-ev_QQ = zeros((M, it))
-ev_PP = zeros((M, it))
-
 screamed = False
 
 if recalculate:
+    ev_Q = zeros((N, it))
+    ev_P = zeros((N, it))
+    ev_QQ = zeros((M, it))
+    ev_PP = zeros((M, it))
+    
     for t in tqdm(range(it)):
         ev_Q[:, t] = array([expval(Q[n], Rho) for n in range(N)])
         ev_P[:, t] = array([expval(P[n], Rho) for n in range(N)])
         ev_QQ[:, t] = array([expval(Q[n].dot(Q[j]), Rho) for n in range(N) for j in range(n, N)])
         ev_PP[:, t] = array([expval(P[n].dot(P[j]), Rho) for n in range(N) for j in range(n, N)])
         
-        Rho = rk4(liouville_explicit, Rho)
+        Rho = rk4(liouville, Rho)
         
-        # assert np.all(Rho[t] == Rho[t].conj().T)
-        # assert_density(Rho[t])
-        # print(trace(Rho[t]))
+        # assert_density(Rho)
+        # assert is_hermitian(Rho)
+        assert is_unit_trace(Rho)
+        # print(trace(Rho))
         
         if np.isnan(ev_Q[0, t]) and not screamed:
             scream()
             screamed = True
 
-    np.save("eq_Q.npy", ev_Q)
-    np.save("eq_P.npy", ev_P)
-    np.save("eq_QQ.npy", ev_QQ)
-    np.save("eq_PP.npy", ev_PP)
+    np.save("ev_Q.npy", ev_Q)
+    np.save("ev_P.npy", ev_P)
+    np.save("ev_QQ.npy", ev_QQ)
+    np.save("ev_PP.npy", ev_PP)
 else:
-    eq_Q = np.load("eq_Q.npy")
-    eq_P = np.load("eq_P.npy")
-    eq_QQ = np.load("eq_QQ.npy")
-    eq_PP = np.load("eq_PP.npy")
+    ev_Q = np.load("ev_Q.npy")
+    ev_P = np.load("ev_P.npy")
+    ev_QQ = np.load("ev_QQ.npy")
+    ev_PP = np.load("ev_PP.npy")
 
 
+print(ev_Q[0])
+print(ev_Q[1])
+print(ev_Q[2])
 # print("Q:", ev_Q)
 # print("PP:", ev_PP)
 
 # Plots
 # plt.yscale("log")
-print(ev_Q[0])
 first_plot_separate(ev_Q, "Q", True, ev_P)
 # plt.yscale("symlog")
 # plt.ylim([-1e300, 1e300])

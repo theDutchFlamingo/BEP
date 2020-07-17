@@ -1,8 +1,8 @@
 import numpy as np
 
 N = 3
-T_F = 45
-it = 15000000
+T_F = 75
+it = 150000
 it_med = it * 45//T_F
 it_short = it * 15//T_F
 dt = T_F/it
@@ -19,20 +19,20 @@ LambdaM1 = 0.4 * omega_1 * np.array([
     [0, 1],
     [1, 0]
 ])
-LambdaM3 = 0.4 * omega_1 * np.array([
-    [0, 1, 1],
-    [1, 0, 1],
-    [1, 1, 0]
-])
 LambdaM2 = 0.4 * omega_1 * np.array([
     [0, 1, 0],
     [1, 0, 1],
     [0, 1, 0]
 ])
+LambdaM3 = 0.4 * omega_1 * np.array([
+    [0, 1, 1],
+    [1, 0, 1],
+    [1, 1, 0]
+])
 # The adjacency matrix which we are currently investigating
 Lambda = LambdaM0 if N == 1 else LambdaM1 if N == 2 else LambdaM2
 
-# omega = np.array([1.2, 1, 1.8]) if N == 3 else np.ones(N)
+omega = np.array([1.2, 1, 1.8]) if N == 3 else np.ones(N)
 omega = np.ones(N)
 temp = 10 * omega_1
 gamma = 0.07 * omega_1
