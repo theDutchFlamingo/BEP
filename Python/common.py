@@ -4,6 +4,7 @@ import numpy as np
 from scipy import linalg, compress, transpose
 
 tol = 1e-15
+tol_h = tol * 1e5
 
 
 def scream():

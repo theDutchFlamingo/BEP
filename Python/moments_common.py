@@ -2,7 +2,7 @@ import numpy as np
 
 N = 3
 T_F = 75
-it = 150000
+it = 15000
 it_med = it * 45//T_F
 it_short = it * 15//T_F
 dt = T_F/it

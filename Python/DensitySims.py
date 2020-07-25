@@ -1,5 +1,5 @@
 from moments_plotter import *
-from numpy import array, trace
+from numpy import array
 from tqdm import tqdm
 from common import scream
 from operators import *
@@ -7,86 +7,24 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-# The s-level density matrix of one node with nonzero Q-eigenvalue
-def rho_q_basic():
-    rho_Q10s = zeros((s, s))
-    np.fill_diagonal(rho_Q10s, 2)
-    
-    if s > 1:
-        np.fill_diagonal(rho_Q10s[1:], 1)
-        np.fill_diagonal(rho_Q10s[:, 1:], 1)
-    return rho_Q10s
-
-
-# The s-level density matrix of one nodes with nonzero P-eigenvalue
-def rho_p_basic():
-    rho_P10s = zeros((s, s), dtype=complex)
-    np.fill_diagonal(rho_P10s, 2)
-    
-    if s > 1:
-        np.fill_diagonal(rho_P10s[1:], 1j)
-        np.fill_diagonal(rho_P10s[:, 1:], -1j)
-    return rho_P10s
-
-
-# The s-level density matrix of several nodes with nonzero eigenvalue for some operator
-def rho_init(base):
-    ret = sum([kron(kron(np.identity(s**n), base), np.identity(s**(N - n - 1)))
-                      for n in range(N)])
-    print(ret)
-    return ret / trace(ret)
-
-
-def is_hermitian(mat):
-    return np.all(abs(mat - mat.conj().T) < tol)
-
-
-def is_unit_trace(mat):
-    return abs(trace(mat) - 1) < tol * 100000  # Very high tolerance
-
-
-def is_pos_def(mat):
-    return all(np.linalg.eigvalsh(mat) > 0)
-
-
-def assert_density(dens):
-    # Assert Hermitian
-    assert is_hermitian(dens)
-    # Assert unit trace
-    assert is_unit_trace(dens)
-    # Assert positive
-    assert is_pos_def(dens)
-
-
-def com(a, b):
-    return a.dot(b) - b.dot(a)
-
-
-def anti(a, b):
-    return a.dot(b) + b.dot(a)
-
-
-def expval(op, dens):
-    return trace(op.dot(dens))
-
-
-rho_0 = rho_init(rho_q_basic() + rho_p_basic())
+rho_0 = rho_init(rho_q_basic())
 assert_density(rho_0)
 P = array([p(n) for n in range(N)])
 Q = array([q(n) for n in range(N)])
 H = h()
 
-print(expval(Q[0], rho_0))
 # print("P:", P)
 # print("Q:", Q)
-print("H:", H)
+# print("H:", H)
 
-print(np.linalg.eigvalsh(rho_0 - dt*1j*com(H, rho_0)))
-# print(trace(-1j*com(H, rho_0)))  # Should be 0
+
+# The Hamiltonian superoperator, for testing purposes
+def hamiltonian(rho):
+    return -1j * com(H, rho)
 
 
 # The Liouvillian superoperator
-def liouville(rho):
+def liouvillian(rho):
     Sum = 0
 
     # Sum over all the nodes
@@ -97,7 +35,7 @@ def liouville(rho):
     return -1j * com(H, rho) - 1 / 4 * Sum
 
 
-print(np.linalg.eigvalsh(liouville(rho_0)))
+# print(np.linalg.eigvalsh(liouville(rho_0)))
 
 Rho = rho_0
 
@@ -116,10 +54,10 @@ if recalculate:
         ev_QQ[:, t] = array([expval(Q[n].dot(Q[j]), Rho) for n in range(N) for j in range(n, N)])
         ev_PP[:, t] = array([expval(P[n].dot(P[j]), Rho) for n in range(N) for j in range(n, N)])
         
-        Rho = rk4(liouville, Rho)
+        Rho = rk4(liouvillian, Rho)
         
         # assert_density(Rho)
-        # assert is_hermitian(Rho)
+        assert is_hermitian(Rho)
         assert is_unit_trace(Rho)
         # print(trace(Rho))
         
