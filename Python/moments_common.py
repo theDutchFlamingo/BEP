@@ -66,13 +66,6 @@ def num(lesser, greater):
     return tri(N - 1) - tri(N - 1 - lesser) + greater
 
 
-def ind(m):
-    for first in range(N):
-        if tri(N) - tri(N - (first + 1)) > m:
-            second = m - (tri(N) - tri(N - first) - first)
-            return first, second
-
-
 def rk4(f, x):
     """
     An implementation of the classical Runge-Kutta method

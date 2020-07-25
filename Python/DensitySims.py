@@ -49,12 +49,9 @@ mom_info = {
     "PP": (M, PP),
 }
 
-moms = {key : None for key in mom_info.keys()}
+moms = {key : zeros((mom_info[key][0], it)) for key in mom_info.keys()}
 
 if recalculate:
-    for key in moms:
-        moms[key] = zeros((mom_info[key][0], it))
-    
     for t in tqdm(range(it)):
         for key in moms:
             Max, op = mom_info[key]
