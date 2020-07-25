@@ -1,16 +1,15 @@
 from moments_plotter import *
 from numpy import array
 from tqdm import tqdm
-from common import scream
 from operators import *
 import warnings
 warnings.filterwarnings("ignore")
 
 
-rho_0 = rho_init(rho_q_basic())
-assert_density(rho_0)
-P = array([p(n) for n in range(N)])
 Q = array([q(n) for n in range(N)])
+P = array([p(n) for n in range(N)])
+QQ = array([q(n).dot(q(m)) for n in range(N) for m in range(n, N)])
+PP = array([p(n).dot(p(m)) for n in range(N) for m in range(n, N)])
 H = h()
 
 # print("P:", P)
@@ -35,57 +34,51 @@ def liouvillian(rho):
     return -1j * com(H, rho) - 1 / 4 * Sum
 
 
-# print(np.linalg.eigvalsh(liouville(rho_0)))
-
-Rho = rho_0
+# Rho = rho_init()
+Rho = rho_alt()
+assert is_density(Rho)
+# Test if one EF iteration preserves the properties of a density matrix
+assert is_density(Rho + dt*liouvillian(Rho))
 
 recalculate = True
-screamed = False
+
+mom_info = {
+    "Q": (N, Q),
+    "P": (N, P),
+    "QQ": (M, QQ),
+    "PP": (M, PP),
+}
+
+moms = {key : None for key in mom_info.keys()}
 
 if recalculate:
-    ev_Q = zeros((N, it))
-    ev_P = zeros((N, it))
-    ev_QQ = zeros((M, it))
-    ev_PP = zeros((M, it))
+    for key in moms:
+        moms[key] = zeros((mom_info[key][0], it))
     
     for t in tqdm(range(it)):
-        ev_Q[:, t] = array([expval(Q[n], Rho) for n in range(N)])
-        ev_P[:, t] = array([expval(P[n], Rho) for n in range(N)])
-        ev_QQ[:, t] = array([expval(Q[n].dot(Q[j]), Rho) for n in range(N) for j in range(n, N)])
-        ev_PP[:, t] = array([expval(P[n].dot(P[j]), Rho) for n in range(N) for j in range(n, N)])
+        for key in moms:
+            Max, op = mom_info[key]
+            moms[key][:, t] = array([expval(op[n], Rho) for n in range(Max)])
         
         Rho = rk4(liouvillian, Rho)
         
-        # assert_density(Rho)
+        # assert is_density(Rho)
         assert is_hermitian(Rho)
         assert is_unit_trace(Rho)
-        # print(trace(Rho))
-        
-        if np.isnan(ev_Q[0, t]) and not screamed:
-            scream()
-            screamed = True
-
-    np.save("ev_Q.npy", ev_Q)
-    np.save("ev_P.npy", ev_P)
-    np.save("ev_QQ.npy", ev_QQ)
-    np.save("ev_PP.npy", ev_PP)
+    
+    for key in moms:
+        np.save(f"ev_{key}.npy", moms[key])
 else:
-    ev_Q = np.load("ev_Q.npy")
-    ev_P = np.load("ev_P.npy")
-    ev_QQ = np.load("ev_QQ.npy")
-    ev_PP = np.load("ev_PP.npy")
+    for key in moms:
+        moms[key] = np.load(f"ev_{key}.npy")
 
-
-print(ev_Q[0])
-print(ev_Q[1])
-print(ev_Q[2])
-# print("Q:", ev_Q)
-# print("PP:", ev_PP)
 
 # Plots
-# plt.yscale("log")
-first_plot_separate(ev_Q, "Q", True, ev_P)
-# plt.yscale("symlog")
-# plt.ylim([-1e300, 1e300])
-# first_plot_separate(ev_P, "P", True)
-# second_plot_separate(ev_QQ, "Q", colorized=True)
+if "Q" in moms:
+    for i in range(N):
+        print(moms["Q"][i])
+    first_plot_separate(moms["Q"], "Q", True, moms["P"] if "P" in moms else None)
+# if "P" in moms:
+#     first_plot_separate(moms["P"], "P", True)
+# if "QQ" in moms:
+#     second_plot_separate(moms["QQ"], "Q", colorized=True)
