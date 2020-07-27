@@ -5,8 +5,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-# Rho = rho_init()
-Rho = rho_alt()
+Rho = rho_init()
+# Rho = rho_alt()
 assert is_density(Rho)
 # Test if one EF iteration preserves the properties of a density matrix
 assert is_density(Rho + dt*liouvillian(Rho))
@@ -27,9 +27,18 @@ moms = {key : zeros((mom_info[key][0], it)) for key in mom_info.keys()}
 recalculate = True
 require_density = False
 
-print(expval(Q[0], hamiltonian(Rho)))
-print(expval(Q[0], dissipator(Rho)))
-print(expval(Q[0], liouvillian(Rho)))
+for n in range(1):
+    print(com(Q[0], P[0]))
+    print(D[n] * - com(P[n], com(P[n], Rho)) / Omega[n] ** 2)
+
+print("Some info:")
+print("Gamma:", Gamma)
+print("<Q(0)>:", expval(Q[0], Rho))
+print("<P(0)>:", expval(P[0], Rho))
+print("Influences on expval from the")
+print("Hamiltonian", expval(Q[0], hamiltonian(Rho)))
+print("Dissipation", expval(Q[0], dissipation(Rho)))
+print("Liouvillian", expval(Q[0], liouvillian(Rho)))
 
 if recalculate:
     for t in tqdm(range(it)):
@@ -44,7 +53,7 @@ if recalculate:
         # Optional assertions to check that Rho is still a density matrix
         if require_density:
             assert is_density(Rho)
-        # assert is_hermitian(Rho)
+        assert is_hermitian(Rho)
         # assert is_unit_trace(Rho)
     
     for key in moms:
@@ -53,6 +62,8 @@ else:
     for key in moms:
         moms[key] = np.load(f"ev_{key}.npy")
 
+
+print(Rho)
 
 # Plots
 if "Q" in moms:
@@ -63,7 +74,7 @@ if "Q" in moms:
     if print_strings:
         for i in range(N):
             print(m_Q[i])
-    # first_plot_separate(m_Q, "Q", True, moms["P"] if "P" in moms else None)
+    first_plot_separate(m_Q, "Q", True, moms["P"] if "P" in moms else None)
 # if "P" in moms:
 #     first_plot_separate(moms["P"], "P", True)
 # if "QQ" in moms:

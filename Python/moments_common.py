@@ -3,7 +3,7 @@ import numpy as np
 print_strings = False
 
 N = 3
-T_F = 7.5
+T_F = 75
 it = 15000
 it_med = it * 45//T_F
 it_short = it * 15//T_F

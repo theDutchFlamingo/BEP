@@ -129,7 +129,7 @@ def hamiltonian(rho):
     return -1j * com(H, rho)
 
 
-def dissipator(rho):
+def dissipation(rho):
     Sum = 0
 
     # Sum over all the nodes
@@ -142,4 +142,4 @@ def dissipator(rho):
 
 # The Liouvillian superoperator
 def liouvillian(rho):
-    return hamiltonian(rho) + dissipator(rho)
+    return hamiltonian(rho) + dissipation(rho)
