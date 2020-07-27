@@ -2,7 +2,7 @@ from numpy import sqrt, zeros, kron, trace, arange, diag, array
 from common import tol, tol_h
 from moments_common import *
 
-s = 3  # The amount of states that we consider per node
+s = 11  # The amount of states that we consider per node
 K = s ** N  # The amount of states
 
 
@@ -111,6 +111,12 @@ def is_density(dens):
             is_pos_def(dens))
 
 
+def assert_density(dens):
+    assert is_hermitian(dens)
+    assert is_unit_trace(dens)
+    assert is_pos_def(dens)
+
+
 ## Some operators on operators
 def com(a, b):
     return a.dot(b) - b.dot(a)
@@ -135,7 +141,7 @@ def dissipation(rho):
     # Sum over all the nodes
     for n in range(N):
         Sum += 1j * Gamma[n] * (com(Q[n], anti(P[n], rho)) - com(P[n], anti(Q[n], rho)))
-        Sum += D[n] * (com(Q[n], com(Q[n], rho)) - com(P[n], com(P[n], rho)) / Omega[n] ** 2)
+        # Sum += D[n] * (com(Q[n], com(Q[n], rho)) - com(P[n], com(P[n], rho)) / Omega[n] ** 2)
 
     return - 1 / 4 * Sum
 

@@ -9,7 +9,8 @@ Rho = rho_init()
 # Rho = rho_alt()
 assert is_density(Rho)
 # Test if one EF iteration preserves the properties of a density matrix
-assert is_density(Rho + dt*liouvillian(Rho))
+# If not, this means that the time step should be taken smaller
+assert_density(Rho + dt*liouvillian(Rho))
 
 # Defines which moments we will calculate, also defines
 # the number of moments and the corresponding operator:
