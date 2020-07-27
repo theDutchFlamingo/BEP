@@ -1,7 +1,9 @@
 import numpy as np
 
+print_strings = False
+
 N = 3
-T_F = 75
+T_F = 7.5
 it = 15000
 it_med = it * 45//T_F
 it_short = it * 15//T_F
@@ -46,11 +48,12 @@ Gamma = np.sum(F, 0)**2 * gamma
 D = Gamma * Omega / np.tanh(Omega/2/temp)
 C = Gamma * D / (4*Omega**2 + Gamma**2)
 
-print("D:", D)
-print("F:", F)
-print("C:", C)
-print("Gamma:", Gamma)
-print("Omega:", Omega)
+if print_strings:
+    print("D:", D)
+    print("F:", F)
+    print("C:", C)
+    print("Gamma:", Gamma)
+    print("Omega:", Omega)
 
 
 def tri(n):

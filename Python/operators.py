@@ -1,4 +1,4 @@
-from numpy import sqrt, zeros, kron, trace, arange, diag
+from numpy import sqrt, zeros, kron, trace, arange, diag, array
 from common import tol, tol_h
 from moments_common import *
 
@@ -6,6 +6,7 @@ s = 3  # The amount of states that we consider per node
 K = s ** N  # The amount of states
 
 
+## Creation, annihilation, momentum and position operators
 def cr():
     return diag(sqrt(arange(1, s)), -1)
 
@@ -25,17 +26,18 @@ def q(n: int):
 
 
 def h():
-    H = zeros((K, K))
+    A = zeros((K, K))
 
     for n in range(K):
         I = np.arange(N)
         # Digit representation of n in base s with a maximum of N digits
         n_I = (n % s ** (I + 1)) // (s ** I)
-        H[n, n] = Omega.dot(n_I + 1 / 2)
+        A[n, n] = Omega.dot(n_I + 1 / 2)
 
-    return H
+    return A
 
 
+## Initial conditions
 # The s-level density matrix of one node with nonzero Q-eigenvalue
 def rho_q_basic():
     rho_Q10s = zeros((s, s))
@@ -78,6 +80,19 @@ def rho_alt():
     return ret / trace(ret)
 
 
+Q = array([q(n) for n in range(N)])
+P = array([p(n) for n in range(N)])
+QQ = array([q(n).dot(q(m)) for n in range(N) for m in range(n, N)])
+PP = array([p(n).dot(p(m)) for n in range(N) for m in range(n, N)])
+H = h()
+
+if print_strings:
+    print("H:", H)
+    print("P:", P)
+    print("Q:", Q)
+
+
+## Some assertions
 def is_hermitian(mat):
     return np.all(abs(mat - mat.conj().T) < tol)
 
@@ -96,6 +111,7 @@ def is_density(dens):
             is_pos_def(dens))
 
 
+## Some operators on operators
 def com(a, b):
     return a.dot(b) - b.dot(a)
 
@@ -106,3 +122,24 @@ def anti(a, b):
 
 def expval(op, dens):
     return trace(op.dot(dens))
+
+
+# The Hamiltonian superoperator, for testing purposes
+def hamiltonian(rho):
+    return -1j * com(H, rho)
+
+
+def dissipator(rho):
+    Sum = 0
+
+    # Sum over all the nodes
+    for n in range(N):
+        Sum += 1j * Gamma[n] * (com(Q[n], anti(P[n], rho)) - com(P[n], anti(Q[n], rho)))
+        Sum += D[n] * (com(Q[n], com(Q[n], rho)) - com(P[n], com(P[n], rho)) / Omega[n] ** 2)
+
+    return - 1 / 4 * Sum
+
+
+# The Liouvillian superoperator
+def liouvillian(rho):
+    return hamiltonian(rho) + dissipator(rho)
