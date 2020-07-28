@@ -18,6 +18,13 @@ def color_pick(n):
     return color
 
 
+def calc_q(pos, mom, n):
+    d = pos[n, 0]
+    c = (2 * mom[n, 0] + Gamma[n] * d)/(2*Omega[n])
+    return np.exp(-Gamma[n]*T/2) * (c * np.sin(Omega[n]*T) +
+                                    d * np.cos(Omega[n]*T))
+
+
 def calc_u(pos, mom, n, contains_all=True):
     m = num(n, n) if contains_all else n
     U_0 = Omega[n]**2 * pos[m, 0] + mom[m, 0]
@@ -74,13 +81,24 @@ def first_plot_separate(funcs, name, colorized=False, mom=None):
         plt.plot(T, funcs[n], color)
 
         if mom is not None:
-            d = funcs[n, 0]
-            c = (2 * mom[n, 0] + Gamma[n] * d)/(2*Omega[n])
-            plt.plot(T, np.exp(-Gamma[n]*T/2) * (c * np.sin(Omega[n]*T) +
-                                                 d * np.cos(Omega[n]*T)), "k:")
+            
+            plt.plot(T, calc_q(funcs, mom, n), "k:")
             plt.legend(["Solution", "Expected"])
 
         plt.ylabel(f"$\\left<{name}_{n + 1}\\right>$")
+
+    plt.xlabel("$t$")
+    plt.show()
+
+
+def first_plot_rel_error(funcs, name, mom=None):
+    for n in range(N):
+        plt.subplot(N, 1, n + 1)
+        
+        plt.plot(T, (funcs[n] - calc_q(funcs, mom, n))/
+                 max(calc_q(funcs, mom, n)))
+
+        plt.ylabel(f"Error in $\\left<{name}_{n + 1}\\right>$")
 
     plt.xlabel("$t$")
     plt.show()

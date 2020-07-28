@@ -2,7 +2,7 @@ from numpy import sqrt, zeros, kron, trace, arange, diag, array
 from common import tol, tol_h
 from moments_common import *
 
-s = 11  # The amount of states that we consider per node
+s = 5  # The amount of states that we consider per node
 K = s ** N  # The amount of states
 
 

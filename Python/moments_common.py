@@ -3,8 +3,8 @@ import numpy as np
 print_strings = False
 
 N = 3
-T_F = 15
-it = 150
+T_F = 75
+it = 1500
 it_med = it * 45//T_F
 it_short = it * 15//T_F
 dt = T_F/it

@@ -28,20 +28,20 @@ moms = {key : zeros((mom_info[key][0], it)) for key in mom_info.keys()}
 recalculate = True
 require_density = False
 
-for n in range(1):
-    print(com(Q[0], P[0]))
-    print(D[n] * - com(P[n], com(P[n], Rho)) / Omega[n] ** 2)
-
-print("Some info:")
-print("Gamma:", Gamma)
-print("<Q(0)>:", expval(Q[0], Rho))
-print("<P(0)>:", expval(P[0], Rho))
-print("Influences on expval from the")
-print("Hamiltonian", expval(Q[0], hamiltonian(Rho)))
-print("Dissipation", expval(Q[0], dissipation(Rho)))
-print("Liouvillian", expval(Q[0], liouvillian(Rho)))
-
 if recalculate:
+    for n in range(1):
+        print(com(Q[0], P[0]))
+        print(D[n] * - com(P[n], com(P[n], Rho)) / Omega[n] ** 2)
+    
+    print("Some info:")
+    print("Gamma:", Gamma)
+    print("<Q(0)>:", expval(Q[0], Rho))
+    print("<P(0)>:", expval(P[0], Rho))
+    print("Influences on expval from the")
+    print("Hamiltonian", expval(Q[0], hamiltonian(Rho)))
+    print("Dissipation", expval(Q[0], dissipation(Rho)))
+    print("Liouvillian", expval(Q[0], liouvillian(Rho)))
+
     for t in tqdm(range(it)):
         # Calculate the moments that we want
         for key in moms:
@@ -76,7 +76,8 @@ if "Q" in moms:
         for i in range(N):
             print(m_Q[i])
     first_plot_separate(m_Q, "Q", True, moms["P"] if "P" in moms else None)
+    # first_plot_rel_error(m_Q, "Q", moms["P"] if "P" in moms else None)
 # if "P" in moms:
 #     first_plot_separate(moms["P"], "P", True)
-# if "QQ" in moms:
-#     second_plot_separate(moms["QQ"], "Q", colorized=True)
+if "QQ" in moms:
+    second_plot_separate(moms["QQ"], "Q", colorized=True)
