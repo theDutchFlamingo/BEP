@@ -1,15 +1,16 @@
 import numpy as np
+from termcolor import colored
 
 tol = 1e-15
 tol_h = tol * 1e5
 
-print_strings = False
+print_strings = True
 
 N = 3
 T_F = 2.5  # The full time
 T_med = min(T_F, 45)  # The time for second order plots
 T_short = min(T_F, 15)  # The time for grid plots
-it = 1500  # The full number of iterations
+it = 150  # The full number of iterations
 it_med = int(it * T_med/T_F)  # The number of iterations for second order plots
 it_short = int(it * T_short/T_F)  # The number of iterations for grid plots
 dt = T_F/it
@@ -54,11 +55,11 @@ D = Gamma * Omega / np.tanh(Omega/2/temp)
 C = Gamma * D / (4*Omega**2 + Gamma**2)
 
 if print_strings:
-    print("D:", D)
-    print("F:", F)
-    print("C:", C)
-    print("Gamma:", Gamma)
-    print("Omega:", Omega)
+    print(colored(f"D: {D}", "blue"))
+    print(colored(f"F: {F}", "blue"))
+    print(colored(f"C: {C}", "blue"))
+    print(colored(f"Gamma: {Gamma}", "blue"))
+    print(colored(f"Omega: {Omega}", "blue"))
 
 
 def tri(n):

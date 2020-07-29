@@ -57,11 +57,11 @@ else:
 
 if require_density:
     if loss_its[0] != -1:
-        print("Hermicity lost at:", loss_its[0])
+        print(colored(f"Hermicity lost at: {loss_its[0]}", "yellow"))
     if loss_its[1] != -1:
-        print("Positivity lost at:", loss_its[1])
+        print(colored(f"Positivity lost at: {loss_its[1]}", "yellow"))
     if loss_its[2] != -1:
-        print("Unit trace lost at:", loss_its[2])
+        print(colored(f"Unit trace lost at: {loss_its[2]}", "yellow"))
 
 
 # Plots
@@ -69,7 +69,7 @@ if "Q" in moms:
     m_Q = moms["Q"]
     
     if print_strings:
-        [print(m_Q[n]) for n in range(N)]
+        [print(colored(m_Q[n], "green")) for n in range(N)]
     
     first_plot_separate(m_Q, "Q", True, moms["P"] if "P" in moms else None)
     # first_plot_rel_error(m_Q, "Q", moms["P"] if "P" in moms else None)

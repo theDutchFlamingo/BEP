@@ -1,7 +1,7 @@
 from numpy import sqrt, zeros, kron, trace, arange, diag, array
 from moments_common import *
 
-s = 4  # The amount of states that we consider per node
+s = 3  # The amount of states that we consider per node
 K = s ** N  # The amount of states
 
 
@@ -86,9 +86,9 @@ PP = array([p(n).dot(p(m)) for n in range(N) for m in range(n, N)])
 H = h()
 
 if print_strings:
-    print("H:", H)
-    print("P:", P)
-    print("Q:", Q)
+    print(colored(f"H: {H}", "blue"))
+    print(colored(f"P: {P}", "blue"))
+    print(colored(f"Q: {Q}", "blue"))
 
 
 ## Some assertions
