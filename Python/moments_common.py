@@ -7,10 +7,10 @@ tol_h = tol * 1e5
 print_strings = True
 
 N = 3
-T_F = 2.5  # The full time
+T_F = 15  # The full time
 T_med = min(T_F, 45)  # The time for second order plots
 T_short = min(T_F, 15)  # The time for grid plots
-it = 150  # The full number of iterations
+it = 1500  # The full number of iterations
 it_med = int(it * T_med/T_F)  # The number of iterations for second order plots
 it_short = int(it * T_short/T_F)  # The number of iterations for grid plots
 dt = T_F/it
