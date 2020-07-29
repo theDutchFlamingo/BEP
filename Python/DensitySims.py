@@ -26,22 +26,10 @@ mom_info = {
 moms = {key : zeros((mom_info[key][0], it)) for key in mom_info.keys()}
 
 recalculate = True
-require_density = False
+require_density = True
+loss_its = [-1, -1, -1]  # The iteration numbers at which each property is lost
 
 if recalculate:
-    for n in range(1):
-        print(com(Q[0], P[0]))
-        print(D[n] * - com(P[n], com(P[n], Rho)) / Omega[n] ** 2)
-    
-    print("Some info:")
-    print("Gamma:", Gamma)
-    print("<Q(0)>:", expval(Q[0], Rho))
-    print("<P(0)>:", expval(P[0], Rho))
-    print("Influences on expval from the")
-    print("Hamiltonian", expval(Q[0], hamiltonian(Rho)))
-    print("Dissipation", expval(Q[0], dissipation(Rho)))
-    print("Liouvillian", expval(Q[0], liouvillian(Rho)))
-
     for t in tqdm(range(it)):
         # Calculate the moments that we want
         for key in moms:
@@ -51,11 +39,14 @@ if recalculate:
         # Perform one rk4 iteration
         Rho = rk4(liouvillian, Rho)
         
-        # Optional assertions to check that Rho is still a density matrix
+        # Optional assertions to check when Rho is no longer a density matrix
         if require_density:
-            assert is_density(Rho)
-        assert is_hermitian(Rho)
-        # assert is_unit_trace(Rho)
+            if not is_hermitian(Rho) and loss_its[0] == -1:
+                loss_its[0] = t
+            if not is_pos_def(Rho) and loss_its[1] == -1:
+                loss_its[1] = t
+            if not is_unit_trace(Rho) and loss_its[2] == -1:
+                loss_its[2] = t
     
     for key in moms:
         np.save(f"ev_{key}.npy", moms[key])
@@ -64,13 +55,18 @@ else:
         moms[key] = np.load(f"ev_{key}.npy")
 
 
-print(Rho)
+if require_density:
+    if loss_its[0] != -1:
+        print("Hermicity lost at:", loss_its[0])
+    if loss_its[1] != -1:
+        print("Positivity lost at:", loss_its[1])
+    if loss_its[2] != -1:
+        print("Unit trace lost at:", loss_its[2])
+
 
 # Plots
 if "Q" in moms:
     m_Q = moms["Q"]
-    print("Q(0):", m_Q[0, 0])
-    print("dQ1(0)/dt:", (m_Q[0, 1] - m_Q[0, 0])/dt)
     
     if print_strings:
         for i in range(N):
@@ -79,5 +75,5 @@ if "Q" in moms:
     # first_plot_rel_error(m_Q, "Q", moms["P"] if "P" in moms else None)
 # if "P" in moms:
 #     first_plot_separate(moms["P"], "P", True)
-if "QQ" in moms:
-    second_plot_separate(moms["QQ"], "Q", colorized=True)
+# if "QQ" in moms:
+#     second_plot_separate(moms["QQ"], "Q", colorized=True)

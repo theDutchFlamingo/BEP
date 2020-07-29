@@ -1,5 +1,4 @@
 from moments_common import *
-from common import tol
 from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.rcParams['text.usetex'] = True

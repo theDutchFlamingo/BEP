@@ -1,12 +1,17 @@
 import numpy as np
 
+tol = 1e-15
+tol_h = tol * 1e5
+
 print_strings = False
 
 N = 3
-T_F = 75
-it = 1500
-it_med = it * 45//T_F
-it_short = it * 15//T_F
+T_F = 2.5  # The full time
+T_med = min(T_F, 45)  # The time for second order plots
+T_short = min(T_F, 15)  # The time for grid plots
+it = 1500  # The full number of iterations
+it_med = int(it * T_med/T_F)  # The number of iterations for second order plots
+it_short = int(it * T_short/T_F)  # The number of iterations for grid plots
 dt = T_F/it
 T = np.arange(0, T_F, dt)
 

@@ -1,8 +1,7 @@
 from numpy import sqrt, zeros, kron, trace, arange, diag, array
-from common import tol, tol_h
 from moments_common import *
 
-s = 5  # The amount of states that we consider per node
+s = 4  # The amount of states that we consider per node
 K = s ** N  # The amount of states
 
 
@@ -141,7 +140,7 @@ def dissipation(rho):
     # Sum over all the nodes
     for n in range(N):
         Sum += 1j * Gamma[n] * (com(Q[n], anti(P[n], rho)) - com(P[n], anti(Q[n], rho)))
-        # Sum += D[n] * (com(Q[n], com(Q[n], rho)) - com(P[n], com(P[n], rho)) / Omega[n] ** 2)
+        Sum += D[n] * (com(Q[n], com(Q[n], rho)) - com(P[n], com(P[n], rho)) / Omega[n] ** 2)
 
     return - 1 / 4 * Sum
 
