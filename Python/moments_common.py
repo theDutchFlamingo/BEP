@@ -42,7 +42,7 @@ Lambda = LambdaM0 if N == 1 else LambdaM1 if N == 2 else LambdaM2
 
 omega = np.array([1.2, 1, 1.8]) if N == 3 else np.ones(N)
 omega = np.ones(N)
-temp = 10 * omega_1
+temp = omega_1
 gamma = 0.07 * omega_1
 
 k_m = np.max(np.sum(Lambda, 0))  # Constant to assure positivity
@@ -52,6 +52,7 @@ HO = np.diag(omega**2 + 2 * k_m)
 Omega, F = np.linalg.eigh(HO - Lambda)
 Gamma = np.sum(F, 0)**2 * gamma
 D = Gamma * Omega / np.tanh(Omega/2/temp)
+D *= 0
 C = Gamma * D / (4*Omega**2 + Gamma**2)
 
 if print_strings:
