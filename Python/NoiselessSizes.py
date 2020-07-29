@@ -2,8 +2,10 @@ from common import *
 from plotter import *
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
 
-p1 = .05
+p1 = .8
 N = 15
 It = 5000
 
@@ -75,11 +77,21 @@ def new_version(dat):
 
 data = new_version(res)
 
-fig, ax = plt.subplots(2, 1)
-im, cbar = heatmap(data, end=N, ax=ax[0], cmap="YlGnBu")
-ax[0].invert_yaxis()
+fig, ax1 = plt.subplots()
 
-ax[1].bar(np.arange(1, N + 1), np.sum(np.nan_to_num(data), axis=1))
-ax[1].set_xlim(1, 15)
+left, bottom, width, height = [0.25, 0.55, 0.4, 0.4]
+ax2 = fig.add_axes([left, bottom, width, height])
+
+im, cbar = heatmap(data, end=N, ax=ax1, cmap="YlGnBu")
+ax1.invert_yaxis()
+ax1.set_ylabel("NS Size")
+ax1.set_xlabel("Component size")
+
+ax2.bar(np.arange(1, N + 1), np.sum(np.nan_to_num(data), axis=1), color="plum")
+ax2.set_xlim(1, 15)
+plt.xticks(range(0, 16, 5))
+ax2.patch.set_alpha(0)
+ax2.set_ylabel("Probability")
+ax2.set_xlabel("NS Size")
 
 plt.show()
