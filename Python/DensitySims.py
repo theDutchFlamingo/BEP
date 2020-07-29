@@ -69,11 +69,13 @@ if "Q" in moms:
     m_Q = moms["Q"]
     
     if print_strings:
-        for i in range(N):
-            print(m_Q[i])
+        [print(m_Q[n]) for n in range(N)]
+    
     first_plot_separate(m_Q, "Q", True, moms["P"] if "P" in moms else None)
     # first_plot_rel_error(m_Q, "Q", moms["P"] if "P" in moms else None)
+# 
 # if "P" in moms:
 #     first_plot_separate(moms["P"], "P", True)
+# 
 # if "QQ" in moms:
 #     second_plot_separate(moms["QQ"], "Q", colorized=True)
