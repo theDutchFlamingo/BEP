@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.rcParams['text.usetex'] = True
 
-M = tri(N)
+# Default text sizes
+def_sizes = [8, 12]
 
 
 def color_pick(n):
@@ -61,59 +62,66 @@ def calc_v_2(pos, mom, n, contains_all=True, r=None):
 # calc_v = calc_v_2
 
 
-def first_plot_combined(funcs, name):
+def first_plot_combined(funcs, name, sizes=def_sizes):
     for n in range(N):
         plt.plot(T, funcs[n])
 
     plt.legend([f"Node {n + 1}" for n in range(N)])
-    plt.ylabel(f"$\\left<{name}_i\\right>$")
-    plt.xlabel("$t$")
+    plt.ylabel(f"$\\left<{name}_i\\right>$", size=sizes[1])
+    plt.xlabel("$t$", size=sizes[1])
+    plt.xticks(size=sizes[0])
+    plt.yticks(size=sizes[0])
     plt.show()
 
 
-def first_plot_separate(funcs, name, colorized=False, mom=None):
+def first_plot_separate(funcs, name, colorized=False, mom=None, sizes=def_sizes):
     for n in range(N):
         plt.subplot(N, 1, n + 1)
 
         color = color_pick(n) if colorized else ""
 
         plt.plot(T, funcs[n], color)
+        plt.xticks(size=sizes[0])
+        plt.yticks(size=sizes[0])
 
         if mom is not None:
-            
             plt.plot(T, calc_q(funcs, mom, n), "k:")
             plt.legend(["Solution", "Expected"])
 
-        plt.ylabel(f"$\\left<{name}_{n + 1}\\right>$")
+        plt.ylabel(f"$\\left<{name}_{n + 1}\\right>$", size=sizes[1])
 
-    plt.xlabel("$t$")
+    plt.xlabel("$t$", size=sizes[1])
     plt.show()
 
 
-def first_plot_rel_error(funcs, name, mom=None):
+def first_plot_rel_error(funcs, name, mom=None, sizes=def_sizes):
     for n in range(N):
         plt.subplot(N, 1, n + 1)
         
         plt.plot(T, (funcs[n] - calc_q(funcs, mom, n))/
                  max(calc_q(funcs, mom, n)))
+        plt.xticks(size=sizes[0])
+        plt.yticks(size=sizes[0])
 
-        plt.ylabel(f"Error in $\\left<{name}_{n + 1}\\right>$")
+        plt.ylabel(f"Error in $\\left<{name}_{n + 1}\\right>$", size=sizes[1])
 
-    plt.xlabel("$t$")
+    plt.xlabel("$t$", size=sizes[1])
     plt.show()
 
 
-def second_plot_combined(funcs, name):
+def second_plot_combined(funcs, name, sizes=def_sizes):
     for m in range(M):
         plt.plot(T[:it_med], funcs[m, :it_med])
 
     plt.legend([f"Node {(n, m)}" for n in range(N) for m in range(n, N)])
-    plt.ylabel(f"$\\left<{name}_i {name}_j\\right>$")
-    plt.xlabel("$t$")
+    plt.ylabel(f"$\\left<{name}_i {name}_j\\right>$", size=sizes[1])
+    plt.xlabel("$t$", size=sizes[1])
+    plt.xticks(size=sizes[0])
+    plt.yticks(size=sizes[0])
     plt.show()
 
 
-def second_plot_separate(funcs, name, colorized=False):
+def second_plot_separate(funcs, name, colorized=False, sizes=def_sizes):
     for n in range(N):
         for m in range(n, N):
             plt.subplot(N, N, 1 + N*n + m)
@@ -123,18 +131,20 @@ def second_plot_separate(funcs, name, colorized=False):
             if n == m:
                 color = color_pick(n) if colorized else ""
 
-                plt.xlabel("$t$")
-                plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$")
+                plt.xlabel("$t$", size=sizes[1])
+                plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$", size=sizes[1])
             else:
-                plt.ylabel(f"$\\left<{name}_{n + 1} {name}_{m + 1}\\right>$")
+                plt.ylabel(f"$\\left<{name}_{n + 1} {name}_{m + 1}\\right>$", size=sizes[1])
 
             plt.plot(T[:it_short], funcs[num(n, m), :it_short], color)
+            plt.xticks(size=sizes[0])
+            plt.yticks(size=sizes[0])
 
     plt.show()
 
 
 def second_plot_diagonal(pos, name, colorized=False,
-                         contains_all=True, mom=None, r=None):
+                         contains_all=True, mom=None, r=None, sizes=def_sizes):
     for n in range(N):
         m = num(n, n) if contains_all else n
         
@@ -143,19 +153,21 @@ def second_plot_diagonal(pos, name, colorized=False,
         color = color_pick(n) if colorized else ""
 
         plt.plot(T[:it_med], pos[m, :it_med], color)
+        plt.xticks(size=sizes[0])
+        plt.yticks(size=sizes[0])
 
         if mom is not None:
             plt.plot(T[:it_med], ((calc_u(pos, mom, n, contains_all) +
                                    calc_v(pos, mom, n, contains_all, r))/2/Omega[n]**2)[:it_med], "k:")
             plt.legend(["Solution", "Expected"])
 
-        plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$")
+        plt.ylabel(f"$\\left<{name}_{n + 1}^2\\right>$", size=sizes[1])
 
-    plt.xlabel("$t$")
+    plt.xlabel("$t$", size=sizes[1])
     plt.show()
 
 
-def second_plot_cross(funcs, name):
+def second_plot_cross(funcs, name, sizes=def_sizes):
     index = 1
 
     for n in range(N):
@@ -163,30 +175,34 @@ def second_plot_cross(funcs, name):
             plt.subplot(M - N, 1, index)
             index += 1
             plt.plot(T[:it_med], funcs[num(n, m), :it_med])
-            plt.ylabel(f"$\\left<{name}_{n + 1}{name}_{m + 1}\\right>$")
+            plt.xticks(size=sizes[0])
+            plt.yticks(size=sizes[0])
+            plt.ylabel(f"$\\left<{name}_{n + 1}{name}_{m + 1}\\right>$", size=sizes[1])
 
-    plt.xlabel("$t$")
+    plt.xlabel("$t$", size=sizes[1])
     plt.show()
 
 
-def second_plot_u(qq, pp, name1, name2, colorized=False, expect=False):
+def second_plot_u(qq, pp, name1, name2, colorized=False, expect=False, sizes=def_sizes):
     for n in range(N):
         plt.subplot(N, 1, n + 1)
 
         color = color_pick(n) if colorized else ""
 
         plt.plot(T[:it_med], (Omega[n]**2 * qq[num(n, n)] + pp[num(n, n)])[:it_med], color)
-        plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 + {name2}_{n + 1}^2\\right>$")
+        plt.xticks(size=sizes[0])
+        plt.yticks(size=sizes[0])
+        plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 + {name2}_{n + 1}^2\\right>$", size=sizes[1])
 
         if expect:
             plt.plot(T[:it_med], calc_u(qq, pp, n)[:it_med], "k:")
             plt.legend(["Solution", "Expected"])
 
-    plt.xlabel("$t$")
+    plt.xlabel("$t$", size=sizes[1])
     plt.show()
 
 
-def second_plot_v(qq, pp, name1, name2, colorized=False, expect=False):
+def second_plot_v(qq, pp, name1, name2, colorized=False, expect=False, sizes=def_sizes):
     for n in range(N):
         plt.subplot(N, 1, n + 1)
 
@@ -195,11 +211,13 @@ def second_plot_v(qq, pp, name1, name2, colorized=False, expect=False):
         plt.plot(T[:it_med], (Omega[n]**2 * qq[num(n, n)] - pp[num(n, n)])[:it_med], color)
         plt.plot(T[:it_med], -C[n] * np.ones(it)[:it_med],
                  linestyle="dashed", color="lightgray")
-        plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 - {name2}_{n + 1}^2\\right>$")
+        plt.xticks(size=sizes[0])
+        plt.yticks(size=sizes[0])
+        plt.ylabel(f"$\\left<\\Omega_{n + 1}^2 {name1}_{n + 1}^2 - {name2}_{n + 1}^2\\right>$", size=sizes[1])
 
         if expect:
             plt.plot(T[:it_med], calc_v(qq, pp, n)[:it_med], "k:")
             plt.legend(["Solution", "Offset (expected)", "Expected"])
 
-    plt.xlabel("$t$")
+    plt.xlabel("$t$", size=sizes[1])
     plt.show()

@@ -14,14 +14,24 @@ def an():
     return diag(sqrt(arange(1, s)), 1)
 
 
+# The p operator for 1 node
+def p1(n: int):
+    return -1j * sqrt(.5 * Omega[n]) * (an() - cr())
+
+
+# The full p operator
 def p(n: int):
-    base = -1j * sqrt(.5 * Omega[n]) * (an() - cr())
-    return kron(kron(np.identity(s**(N - n - 1)), base), np.identity(s**n))
+    return kron(kron(np.identity(s**(N - n - 1)), p1(n)), np.identity(s**n))
 
 
+# The q operator for 1 node
+def q1(n: int):
+    return 1/sqrt(2 * Omega[n]) * (an() + cr())
+
+
+# The full q operator
 def q(n: int):
-    base = 1/sqrt(2 * Omega[n]) * (an() + cr())
-    return kron(kron(np.identity(s**(N - n - 1)), base), np.identity(s**n))
+    return kron(kron(np.identity(s**(N - n - 1)), q1(n)), np.identity(s**n))
 
 
 def h():
@@ -34,49 +44,6 @@ def h():
         A[n, n] = Omega.dot(n_I + 1 / 2)
 
     return A
-
-
-## Initial conditions
-# The s-level density matrix of one node with nonzero Q-eigenvalue
-def rho_q_basic():
-    rho_Q10s = zeros((s, s))
-    np.fill_diagonal(rho_Q10s, 2)
-
-    if s > 1:
-        np.fill_diagonal(rho_Q10s[1:], 1)
-        np.fill_diagonal(rho_Q10s[:, 1:], 1)
-    return rho_Q10s
-
-
-# The s-level density matrix of one nodes with nonzero P-eigenvalue
-def rho_p_basic():
-    rho_P10s = zeros((s, s), dtype=complex)
-    np.fill_diagonal(rho_P10s, 2)
-
-    if s > 1:
-        np.fill_diagonal(rho_P10s[1:], 1j)
-        np.fill_diagonal(rho_P10s[:, 1:], -1j)
-    return rho_P10s
-
-
-# The s-level density matrix of several nodes with nonzero eigenvalue for some operator
-def rho_init(base = rho_q_basic()):
-    ret = sum([kron(kron(np.identity(s**(N - n - 1)), base), np.identity(s**n))
-               for n in range(N)])
-    return ret / trace(ret)
-
-
-def rho_alt():
-    ret = np.zeros((K, K), dtype=float)
-
-    for n in range(N):
-        d = 2*sqrt(s-1)/sqrt(2 * Omega[n])
-        Q = 1/sqrt(2 * Omega[n]) * (an() + cr())
-        np.fill_diagonal(Q, d)
-        
-        ret += kron(kron(np.identity(s**(N - n - 1)), Q), np.identity(s**n))
-    
-    return ret / trace(ret)
 
 
 Q = array([q(n) for n in range(N)])

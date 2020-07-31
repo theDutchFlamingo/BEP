@@ -53,9 +53,6 @@ def first_order():
     Calculate and plot the first order moments
     :return the data which was plotted
     """
-    p_0 = np.array([0.5, 1, -0.5])
-    q_0 = np.array([-1, 0, 1])
-
     Q = P = np.zeros([N, it])
 
     Q[:, 0] = F.T.dot(q_0)
@@ -101,10 +98,6 @@ def second_order():
     Calculate and plot the second order moments
     :return the data which was plotted
     """
-    qq_0 = np.array([0]*M)
-    pp_0 = np.array([1, 1, -1, 1, -1, 1])
-    pq_0 = np.array([0]*N**2)
-    
     PP = np.zeros([M, it])
     QQ = np.zeros([M, it])
     PQ = np.zeros([N**2, it])
@@ -133,16 +126,19 @@ def get_osc_data(func):
     pass
 
 
-print("L:", L)
+if print_strings:
+    print(colored(f"L: {L}", "blue"))
+
+sizes=[11, 16]
 
 nodes, modes, momenta = first_order()
-first_plot_separate(nodes, "q")
-first_plot_separate(modes, "Q", colorized=True, mom=momenta)
+# first_plot_separate(nodes, "q", sizes=sizes)
+# first_plot_separate(modes, "Q", colorized=True, mom=momenta, sizes=sizes)
 
 nodes, modes, momenta = second_order()
 # second_plot_separate(nodes, "q")  # Not used in report
-# second_plot_separate(modes, "Q", colorized=True)
-# second_plot_diagonal(modes, "Q", colorized=True, mom=momenta)
-# second_plot_cross(modes, "Q")
-# second_plot_u(modes, momenta, "Q", "P", colorized=True, expect=True)
+second_plot_separate(modes, "Q", colorized=True, sizes=sizes)
+# second_plot_diagonal(modes, "Q", colorized=True, mom=momenta, sizes=sizes)
+# second_plot_cross(modes, "Q", sizes=sizes)
+# second_plot_u(modes, momenta, "Q", "P", colorized=True, expect=True, sizes=sizes)
 # second_plot_v(modes, momenta, "Q", "P", True, True)  # Not used in report

@@ -18,7 +18,7 @@ ratios2 = []
 min_ = 1
 min2 = 1
 
-recalculate = True
+recalculate = False
 
 if recalculate:
     # Calculate the probability of 1 NC and the fraction of NCs
@@ -103,6 +103,8 @@ def one_plot():
 
 def two_plot():
     plt.imshow(ratios2[:, P_start:], **im_args, norm=cl.LogNorm())
+    plt.xlabel("p")
+    plt.ylabel("N")
     plt.title("Averages")
     plt.colorbar()
 
@@ -111,6 +113,8 @@ def two_plot():
     plt.imshow(ratios[:, P_start:], **im_args, norm=cl.LogNorm())
     plt.title("Probability of 1")
     plt.plot(P_C, N_dense, color="green", linestyle="--")
+    plt.xlabel("p")
+    plt.ylabel("N")
     plt.colorbar()
 
     plt.show()

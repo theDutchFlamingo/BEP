@@ -7,7 +7,7 @@ tol_h = tol * 1e5
 print_strings = True
 
 N = 3
-T_F = 15  # The full time
+T_F = 75  # The full time
 T_med = min(T_F, 45)  # The time for second order plots
 T_short = min(T_F, 15)  # The time for grid plots
 it = 1500  # The full number of iterations
@@ -88,3 +88,16 @@ def rk4(f, x):
     k3 = f(x + dt*k2/2)
     k4 = f(x + dt*k3)
     return x + dt/6*(k1 + 2*k2 + 2*k3 + k4)
+
+
+M = tri(N)
+
+## Initial conditions
+# First order
+p_0 = np.array([0.5, 1, -0.5])
+q_0 = np.array([-1, 0, 1])
+
+# Second order
+qq_0 = np.array([0]*M)
+pp_0 = np.array([1, 1, -1, 1, -1, 1])
+pq_0 = np.array([0]*N**2)

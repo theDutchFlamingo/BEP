@@ -1,13 +1,17 @@
 from moments_plotter import *
+from density_initial import *
 from tqdm import tqdm
-from operators import *
 import warnings
 warnings.filterwarnings("ignore")
 
 
 Rho = rho_init()
+
+for n in range(N):
+    print(expval(Q[n], Rho))
+    print(expval(P[n], Rho))
 # Rho = rho_alt()
-assert is_density(Rho)
+assert_density(Rho)
 # Test if one EF iteration preserves the properties of a density matrix
 # If not, this means that the time step should be taken smaller
 assert_density(Rho + dt*liouvillian(Rho))
